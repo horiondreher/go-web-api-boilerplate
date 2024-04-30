@@ -5,8 +5,8 @@ sql:
   engine: "postgresql"
   gen:
     go: 
-      package: "postgres"
-      out: "internal/infrastructure/persistence/postgres"
+      package: "pgsqlc"
+      out: "internal/infrastructure/persistence/pgsqlc"
       sql_package: "pgx/v5"
       emit_json_tags: false
       emit_interface: true

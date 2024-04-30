@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE "user" (
     "id" BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "uid" UUID DEFAULT uuid_generate_v4(),

@@ -86,11 +86,11 @@ func TestCreateUserV1(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			req, err := http.NewRequest("POST", "/user", bytes.NewBufferString(tc.body))
+			req, err := http.NewRequest("POST", "/v1/user", bytes.NewBufferString(tc.body))
 			require.NoError(t, err)
 
 			recorder := httptest.NewRecorder()
-			server, err := NewHTTPHandler(testService)
+			server, err := NewHTTPAdapter(testService)
 
 			require.NoError(t, err)
 

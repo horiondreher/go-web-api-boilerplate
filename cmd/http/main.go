@@ -9,7 +9,7 @@ import (
 
 	httpV1 "github.com/horiondreher/go-boilerplate/internal/adapters/http/v1"
 	"github.com/horiondreher/go-boilerplate/internal/application/service"
-	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/postgres"
+	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-boilerplate/pkg/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -37,9 +37,9 @@ func main() {
 		log.Err(err).Msg("Error connecting to database")
 	}
 
-	store := postgres.New(conn)
+	store := pgsqlc.New(conn)
 	service := service.NewService(store)
-	server, err := httpV1.NewHTTPHandler(service)
+	server, err := httpV1.NewHTTPAdapter(service)
 
 	if err != nil {
 		log.Err(err).Msg("Error creating server")

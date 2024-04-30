@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
-	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/postgres"
+	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-boilerplate/pkg/utils"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -13,10 +13,10 @@ import (
 )
 
 type Service struct {
-	store postgres.Querier
+	store pgsqlc.Querier
 }
 
-func NewService(store postgres.Querier) *Service {
+func NewService(store pgsqlc.Querier) *Service {
 	return &Service{
 		store: store,
 	}
@@ -30,7 +30,7 @@ func (service *Service) CreateUser(reqUser entities.CreateUserRequestDto) (entit
 		return entities.CreateUserResponseDto{}, err
 	}
 
-	args := postgres.CreateUserParams{
+	args := pgsqlc.CreateUserParams{
 		Email:    reqUser.Email,
 		Password: hashedPassword,
 		FullName: reqUser.FullName,

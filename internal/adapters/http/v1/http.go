@@ -32,7 +32,7 @@ func setupValidator() {
 	})
 }
 
-type HTTPHandler struct {
+type HTTPAdapter struct {
 	service ports.Service
 
 	config *utils.Config
@@ -42,66 +42,79 @@ type HTTPHandler struct {
 	tokenMaker *token.PasetoMaker
 }
 
-func NewHTTPHandler(service ports.Service) (*HTTPHandler, error) {
+func NewHTTPAdapter(service ports.Service) (*HTTPAdapter, error) {
 
-	httpHandler := &HTTPHandler{
+	httpAdapter := &HTTPAdapter{
 		service: service,
 		config:  utils.GetConfig(),
 	}
 
 	setupValidator()
-	httpHandler.setupRouter()
-	err := httpHandler.setupServer()
+	httpAdapter.setupRouter()
+	err := httpAdapter.setupServer()
 
 	if err != nil {
 		log.Err(err).Msg("Error setting up server")
 		return nil, err
 	}
 
-	return httpHandler, nil
+	return httpAdapter, nil
 }
 
-func (handler *HTTPHandler) Start() error {
-	log.Info().Str("address", handler.server.Addr).Msg("Starting server")
+func (adapter *HTTPAdapter) Start() error {
+	log.Info().Str("address", adapter.server.Addr).Msg("Starting server")
 
-	return handler.server.ListenAndServe()
+	chi.Walk(adapter.router, adapter.printRoutes)
+
+	return adapter.server.ListenAndServe()
 }
 
-func (handler *HTTPHandler) Shutdown() {
+func (adapter *HTTPAdapter) Shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := handler.server.Shutdown(ctx); err != nil {
+	if err := adapter.server.Shutdown(ctx); err != nil {
 		log.Err(err).Msg("Error shutting down server")
 	}
 }
 
-func (handler *HTTPHandler) setupRouter() {
+func (adapter *HTTPAdapter) setupRouter() {
 	router := chi.NewRouter()
 
-	router.Use(middleware.Logger)
+	router.NotFound(notFoundResponse)
+	router.MethodNotAllowed(methodNotAllowedResponse)
 
-	router.Post("/user", handler.createUser)
-	router.Post("/login", handler.loginUser)
+	v1Router := chi.NewRouter()
+	v1Router.Use(middleware.Logger)
 
-	handler.router = router
+	v1Router.Post("/user", adapter.createUser)
+	v1Router.Post("/login", adapter.loginUser)
+
+	router.Mount("/v1", v1Router)
+
+	adapter.router = router
 }
 
-func (handler *HTTPHandler) setupServer() error {
+func (adapter *HTTPAdapter) printRoutes(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	log.Info().Str("method", method).Str("route", route).Msg("Route registered")
+	return nil
+}
 
-	tokenMaker, err := token.NewPasetoMaker(handler.config.TokenSymmetricKey)
+func (adapter *HTTPAdapter) setupServer() error {
+
+	tokenMaker, err := token.NewPasetoMaker(adapter.config.TokenSymmetricKey)
 
 	if err != nil {
 		return err
 	}
 
 	server := &http.Server{
-		Addr:    handler.config.HTTPServerAddress,
-		Handler: handler.router,
+		Addr:    adapter.config.HTTPServerAddress,
+		Handler: adapter.router,
 	}
 
-	handler.tokenMaker = tokenMaker
-	handler.server = server
+	adapter.tokenMaker = tokenMaker
+	adapter.server = server
 
 	return nil
 }

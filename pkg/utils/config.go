@@ -10,6 +10,9 @@ import (
 
 type Config struct {
 	Environment          string        `mapstructure:"ENVIRONMENT"`
+	DBName               string        `mapstructure:"POSTGRES_DB"`
+	DBUser               string        `mapstructure:"POSTGRES_USER"`
+	DBPassword           string        `mapstructure:"POSTGRES_PASSWORD"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`

@@ -20,6 +20,8 @@ var (
 	UnexpectedError = "unexpected-error"
 	InvalidPassword = "invalid-password"
 	InternalError   = "internal-error"
+	NotFound        = "not-found"
+	MehodNotAllowed = "method-not-allowed"
 )
 
 type HttpError struct {
@@ -87,7 +89,7 @@ func matchGenericError(err error) (int, HttpError) {
 	}
 }
 
-func error_response(w http.ResponseWriter, r *http.Request, err error) {
+func errorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	var encodeErr error
 
 	switch e := err.(type) {
@@ -111,4 +113,22 @@ func error_response(w http.ResponseWriter, r *http.Request, err error) {
 		log.Err(encodeErr).Msg("Error encoding response")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
+}
+
+func notFoundResponse(w http.ResponseWriter, r *http.Request) {
+	httpError := HttpError{
+		Code:   NotFound,
+		Errors: "The requested resource was not found",
+	}
+
+	encode(w, r, http.StatusNotFound, httpError)
+}
+
+func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+	httpError := HttpError{
+		Code:   MehodNotAllowed,
+		Errors: "The request method is not allowed",
+	}
+
+	encode(w, r, http.StatusMethodNotAllowed, httpError)
 }

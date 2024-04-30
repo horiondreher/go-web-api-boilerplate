@@ -6,61 +6,61 @@ import (
 	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
 )
 
-func (handler *HTTPHandler) createUser(w http.ResponseWriter, r *http.Request) {
+func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) {
 	user, err := decode[entities.CreateUserRequestDto](r)
 
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
 	err = validate.Struct(user)
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
-	userResponse, err := handler.service.CreateUser(user)
+	userResponse, err := adapter.service.CreateUser(user)
 
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
 	encode(w, r, http.StatusCreated, userResponse)
 }
 
-func (handler *HTTPHandler) loginUser(w http.ResponseWriter, r *http.Request) {
+func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) {
 	user, err := decode[entities.LoginUserRequestDto](r)
 
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
 	err = validate.Struct(user)
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
-	userResponse, err := handler.service.LoginUser(user)
+	userResponse, err := adapter.service.LoginUser(user)
 
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
-	accessToken, accessPayload, err := handler.tokenMaker.CreateToken(userResponse.Email, "user", handler.config.AccessTokenDuration)
+	accessToken, accessPayload, err := adapter.tokenMaker.CreateToken(userResponse.Email, "user", adapter.config.AccessTokenDuration)
 
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
-	refreshToken, refreshPayload, err := handler.tokenMaker.CreateToken(userResponse.Email, "user", handler.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := adapter.tokenMaker.CreateToken(userResponse.Email, "user", adapter.config.RefreshTokenDuration)
 	if err != nil {
-		error_response(w, r, err)
+		errorResponse(w, r, err)
 		return
 	}
 
