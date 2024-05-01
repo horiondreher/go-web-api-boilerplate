@@ -90,7 +90,7 @@ func (adapter *HTTPAdapter) setupRouter() {
 	v1Router.Post("/user", adapter.createUser)
 	v1Router.Post("/login", adapter.loginUser)
 
-	router.Mount("/v1", v1Router)
+	router.Mount("/api/v1", v1Router)
 
 	adapter.router = router
 }

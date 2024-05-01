@@ -23,6 +23,8 @@ var interruptSignals = []os.Signal{
 }
 
 func main() {
+	os.Setenv("TZ", "UTC")
+
 	utils.StartLogger()
 
 	// creates a new context with a cancel function that is called when the interrupt signal is received
