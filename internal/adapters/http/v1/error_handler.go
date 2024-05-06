@@ -25,9 +25,14 @@ func errorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	case *pgconn.PgError:
 		errBody := apierrs.TransformPostgresError(e)
 		encodeErr = encode(w, r, http.StatusBadRequest, errBody)
-	case utils.HashError:
+	case *utils.HashError:
 		encodeErr = encode(w, r, http.StatusInternalServerError, apierrs.APIError{
 			Code:   apierrs.InternalError,
+			Errors: e.Error(),
+		})
+	case *SessionError:
+		encodeErr = encode(w, r, http.StatusUnauthorized, apierrs.APIError{
+			Code:   apierrs.UnauthorizedError,
 			Errors: e.Error(),
 		})
 	default:

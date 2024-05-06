@@ -54,7 +54,7 @@ func NewHTTPAdapter(userService ports.Service) (*HTTPAdapter, error) {
 	err := httpAdapter.setupServer()
 
 	if err != nil {
-		log.Err(err).Msg("Error setting up server")
+		log.Err(err).Msg("error setting up server")
 		return nil, err
 	}
 
@@ -74,7 +74,7 @@ func (adapter *HTTPAdapter) Shutdown() {
 	defer cancel()
 
 	if err := adapter.server.Shutdown(ctx); err != nil {
-		log.Err(err).Msg("Error shutting down server")
+		log.Err(err).Msg("error shutting down server")
 	}
 }
 
@@ -89,6 +89,7 @@ func (adapter *HTTPAdapter) setupRouter() {
 
 	v1Router.Post("/users", adapter.createUser)
 	v1Router.Post("/login", adapter.loginUser)
+	v1Router.Post("/renew-token", adapter.renewAccessToken)
 
 	router.Mount("/api/v1", v1Router)
 
@@ -124,7 +125,7 @@ func encode[T any](w http.ResponseWriter, _ *http.Request, status int, v T) erro
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(v); err != nil {
-		log.Err(err).Msg("Error encoding json")
+		log.Err(err).Msg("error encoding json")
 		return err
 	}
 
@@ -135,7 +136,7 @@ func decode[T any](r *http.Request) (T, error) {
 	var v T
 
 	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
-		log.Err(err).Msg("Error decoding JSON")
+		log.Err(err).Msg("error decoding JSON")
 		return v, err
 	}
 

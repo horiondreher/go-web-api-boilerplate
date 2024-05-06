@@ -36,7 +36,7 @@ func main() {
 	conn, err := pgxpool.New(ctx, config.DBSource)
 
 	if err != nil {
-		log.Err(err).Msg("Error connecting to database")
+		log.Err(err).Msg("error connecting to database")
 	}
 
 	store := pgsqlc.New(conn)
@@ -44,14 +44,14 @@ func main() {
 	server, err := httpV1.NewHTTPAdapter(userService)
 
 	if err != nil {
-		log.Err(err).Msg("Error creating server")
+		log.Err(err).Msg("error creating server")
 		stop()
 	}
 
 	// starts the server in a goroutine to let the main goroutine listen for the interrupt signal
 	go func() {
 		if err := server.Start(); err != nil && err != http.ErrServerClosed {
-			log.Err(err).Msg("Error starting server")
+			log.Err(err).Msg("error starting server")
 		}
 	}()
 
@@ -60,5 +60,5 @@ func main() {
 	// gracefully shutdown the server
 	server.Shutdown()
 
-	log.Info().Msg("Server stopped")
+	log.Info().Msg("server stopped")
 }

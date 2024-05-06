@@ -27,3 +27,12 @@ type LoginUserResponseDto struct {
 	RefreshToken          string    `json:"refresh_token"`
 	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
 }
+
+type RenewAccessTokenRequestDto struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
+type RenewAccessTokenResponseDto struct {
+	AccessToken          string    `json:"access_token"`
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
+}

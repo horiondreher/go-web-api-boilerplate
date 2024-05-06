@@ -48,13 +48,13 @@ func GetConfig() *Config {
 		err = viper.ReadInConfig()
 
 		if err != nil {
-			log.Panic().Err(err).Msg("Error loading config")
+			log.Panic().Err(err).Msg("error loading config")
 		}
 
 		err = viper.Unmarshal(instance)
 
 		if err != nil {
-			log.Panic().Err(err).Msg("Error unmarshalling config")
+			log.Panic().Err(err).Msg("error unmarshalling config")
 		}
 	})
 

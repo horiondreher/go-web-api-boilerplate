@@ -6,7 +6,7 @@ type HashError struct {
 	msg string
 }
 
-func (e HashError) Error() string {
+func (e *HashError) Error() string {
 	return e.msg
 }
 
@@ -14,7 +14,7 @@ func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return "", HashError{msg: "Error hashing password"}
+		return "", &HashError{msg: "Error hashing password"}
 	}
 
 	return string(hashedPassword), nil

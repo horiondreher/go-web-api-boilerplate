@@ -14,7 +14,7 @@ import (
 type Session struct {
 	ID           int64
 	Uid          uuid.UUID
-	UserID       int64
+	UserEmail    string
 	RefreshToken string
 	UserAgent    string
 	ClientIp     string

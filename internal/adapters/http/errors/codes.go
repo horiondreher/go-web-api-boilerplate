@@ -10,6 +10,7 @@ var (
 	MehodNotAllowedError = "method-not-allowed"
 	DuplicateError       = "duplicate-error"
 	QueryError           = "query-error"
+	UnauthorizedError    = "unauthorized"
 )
 
 type APIError struct {

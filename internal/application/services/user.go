@@ -27,7 +27,7 @@ func (service *UserService) CreateUser(reqUser entities.CreateUserRequestDto) (e
 	hashedPassword, err := utils.HashPassword(reqUser.Password)
 
 	if err != nil {
-		log.Err(err).Msg("Error hashing password")
+		log.Err(err).Msg("error hashing password")
 		return entities.CreateUserResponseDto{}, err
 	}
 
@@ -48,7 +48,7 @@ func (service *UserService) CreateUser(reqUser entities.CreateUserRequestDto) (e
 	user, err := service.store.CreateUser(ctx, args)
 
 	if err != nil {
-		log.Err(err).Msg("Error creating user")
+		log.Err(err).Msg("error creating user")
 		return entities.CreateUserResponseDto{}, err
 	}
 
@@ -63,14 +63,14 @@ func (service *UserService) LoginUser(reqUser entities.LoginUserRequestDto) (ent
 	user, err := service.store.GetUser(context.Background(), reqUser.Email)
 
 	if err != nil {
-		log.Err(err).Msg("Error getting user by email")
+		log.Err(err).Msg("error getting user by email")
 		return entities.LoginUserResponseDto{}, err
 	}
 
 	err = utils.CheckPassword(reqUser.Password, user.Password)
 
 	if err != nil {
-		log.Err(err).Msg("Invalid password")
+		log.Err(err).Msg("invalid password")
 		return entities.LoginUserResponseDto{}, err
 	}
 
@@ -83,7 +83,7 @@ func (service *UserService) LoginUser(reqUser entities.LoginUserRequestDto) (ent
 func (service *UserService) CreateUserSession(refreshTokenID uuid.UUID, loggedUser *entities.LoginUserResponseDto, userAgent, clientIP string) (pgsqlc.Session, error) {
 	session, err := service.store.CreateSession(context.Background(), pgsqlc.CreateSessionParams{
 		Uid:          refreshTokenID,
-		UserID:       loggedUser.ID,
+		UserEmail:    loggedUser.Email,
 		RefreshToken: loggedUser.RefreshToken,
 		ExpiresAt:    loggedUser.RefreshTokenExpiresAt,
 		UserAgent:    userAgent,
@@ -91,7 +91,18 @@ func (service *UserService) CreateUserSession(refreshTokenID uuid.UUID, loggedUs
 	})
 
 	if err != nil {
-		log.Err(err).Msg("Error creating session")
+		log.Err(err).Msg("error creating session")
+		return pgsqlc.Session{}, err
+	}
+
+	return session, nil
+}
+
+func (service *UserService) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Session, error) {
+	session, err := service.store.GetSession(context.Background(), refreshTokenID)
+
+	if err != nil {
+		log.Err(err).Msg("error getting session")
 		return pgsqlc.Session{}, err
 	}
 

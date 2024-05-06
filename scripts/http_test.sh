@@ -17,6 +17,7 @@ JSON_CONTENT_TYPE="Content-Type: application/json"
 # JSON files
 LOGIN_JSON_FILE="json/login.json"
 USER_JSON_FILE="json/create_user.json"
+RENEW_TOKEN_JSON_FILE="json/renew_token.json"
 
 send_post_request() {
   local url=$1
@@ -39,6 +40,9 @@ case $ACTION in
     ;;
   create_user)
     send_post_request "$BASE_URL/users" "$USER_JSON_FILE"
+    ;;
+  renew_token)
+    send_post_request "$BASE_URL/renew-token" "$RENEW_TOKEN_JSON_FILE"
     ;;
   *)
     echo "Invalid action: $ACTION"

@@ -15,7 +15,7 @@ import (
 const createSession = `-- name: CreateSession :one
 INSERT INTO "session" (
 	"uid"
-	, "user_id"
+	, "user_email"
 	, "refresh_token"
 	, "user_agent"
 	, "client_ip"
@@ -30,12 +30,12 @@ VALUES (
 	, $5
 	, $6
 	, $7
-	) RETURNING id, uid, user_id, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+	) RETURNING id, uid, user_email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
 `
 
 type CreateSessionParams struct {
 	Uid          uuid.UUID
-	UserID       int64
+	UserEmail    string
 	RefreshToken string
 	UserAgent    string
 	ClientIp     string
@@ -46,7 +46,7 @@ type CreateSessionParams struct {
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
 	row := q.db.QueryRow(ctx, createSession,
 		arg.Uid,
-		arg.UserID,
+		arg.UserEmail,
 		arg.RefreshToken,
 		arg.UserAgent,
 		arg.ClientIp,
@@ -57,7 +57,7 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 	err := row.Scan(
 		&i.ID,
 		&i.Uid,
-		&i.UserID,
+		&i.UserEmail,
 		&i.RefreshToken,
 		&i.UserAgent,
 		&i.ClientIp,
@@ -69,7 +69,7 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 }
 
 const getSession = `-- name: GetSession :one
-SELECT id, uid, user_id, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+SELECT id, uid, user_email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
 FROM "session"
 WHERE "uid" = $1 LIMIT 1
 `
@@ -80,7 +80,7 @@ func (q *Queries) GetSession(ctx context.Context, uid uuid.UUID) (Session, error
 	err := row.Scan(
 		&i.ID,
 		&i.Uid,
-		&i.UserID,
+		&i.UserEmail,
 		&i.RefreshToken,
 		&i.UserAgent,
 		&i.ClientIp,
