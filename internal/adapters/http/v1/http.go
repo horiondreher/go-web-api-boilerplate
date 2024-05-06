@@ -33,7 +33,7 @@ func setupValidator() {
 }
 
 type HTTPAdapter struct {
-	service ports.Service
+	userService ports.Service
 
 	config *utils.Config
 	router *chi.Mux
@@ -42,11 +42,11 @@ type HTTPAdapter struct {
 	tokenMaker *token.PasetoMaker
 }
 
-func NewHTTPAdapter(service ports.Service) (*HTTPAdapter, error) {
+func NewHTTPAdapter(userService ports.Service) (*HTTPAdapter, error) {
 
 	httpAdapter := &HTTPAdapter{
-		service: service,
-		config:  utils.GetConfig(),
+		userService: userService,
+		config:      utils.GetConfig(),
 	}
 
 	setupValidator()
@@ -87,7 +87,7 @@ func (adapter *HTTPAdapter) setupRouter() {
 	v1Router := chi.NewRouter()
 	v1Router.Use(middleware.Logger)
 
-	v1Router.Post("/user", adapter.createUser)
+	v1Router.Post("/users", adapter.createUser)
 	v1Router.Post("/login", adapter.loginUser)
 
 	router.Mount("/api/v1", v1Router)

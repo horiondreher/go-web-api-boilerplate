@@ -7,8 +7,21 @@ package pgsqlc
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Session struct {
+	ID           int64
+	Uid          uuid.UUID
+	UserID       int64
+	RefreshToken string
+	UserAgent    string
+	ClientIp     string
+	IsBlocked    bool
+	ExpiresAt    time.Time
+	CreatedAt    time.Time
+}
 
 type User struct {
 	ID         int64

@@ -20,7 +20,7 @@ func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userResponse, err := adapter.service.CreateUser(user)
+	userResponse, err := adapter.userService.CreateUser(user)
 
 	if err != nil {
 		errorResponse(w, r, err)
@@ -44,7 +44,7 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userResponse, err := adapter.service.LoginUser(user)
+	userResponse, err := adapter.userService.LoginUser(user)
 
 	if err != nil {
 		errorResponse(w, r, err)
@@ -68,6 +68,13 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) {
 	userResponse.AccessTokenExpiresAt = accessPayload.ExpiredAt
 	userResponse.RefreshToken = refreshToken
 	userResponse.RefreshTokenExpiresAt = refreshPayload.ExpiredAt
+
+	_, err = adapter.userService.CreateUserSession(refreshPayload.ID, &userResponse, r.UserAgent(), r.RemoteAddr)
+
+	if err != nil {
+		errorResponse(w, r, err)
+		return
+	}
 
 	encode(w, r, http.StatusOK, userResponse)
 }

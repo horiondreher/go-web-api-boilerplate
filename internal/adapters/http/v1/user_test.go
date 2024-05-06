@@ -92,11 +92,11 @@ func TestCreateUserV1(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			req, err := http.NewRequest("POST", "/api/v1/user", bytes.NewBufferString(tc.body))
+			req, err := http.NewRequest("POST", "/api/v1/users", bytes.NewBufferString(tc.body))
 			require.NoError(t, err)
 
 			recorder := httptest.NewRecorder()
-			server, err := NewHTTPAdapter(testService)
+			server, err := NewHTTPAdapter(testUserService)
 
 			require.NoError(t, err)
 
@@ -126,7 +126,7 @@ func TestLoginUser(t *testing.T) {
 		password:  utils.RandomString(6),
 	}
 
-	_, err := testService.CreateUser(entities.CreateUserRequestDto{
+	_, err := testUserService.CreateUser(entities.CreateUserRequestDto{
 		FullName: user.full_name,
 		Email:    user.email,
 		Password: user.password,
@@ -195,7 +195,7 @@ func TestLoginUser(t *testing.T) {
 			require.NoError(t, err)
 
 			recorder := httptest.NewRecorder()
-			server, err := NewHTTPAdapter(testService)
+			server, err := NewHTTPAdapter(testUserService)
 
 			require.NoError(t, err)
 

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/horiondreher/go-boilerplate/internal/application/service"
+	service "github.com/horiondreher/go-boilerplate/internal/application/services"
 	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-boilerplate/pkg/utils"
 
@@ -19,7 +19,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var testService *service.Service
+var testUserService *service.UserService
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
@@ -63,7 +63,7 @@ func TestMain(m *testing.M) {
 	}
 
 	testStore := pgsqlc.New(conn)
-	testService = service.NewService(testStore)
+	testUserService = service.NewUserService(testStore)
 
 	os.Exit(m.Run())
 }
