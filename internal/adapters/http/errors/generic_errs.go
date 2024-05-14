@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,8 +24,10 @@ func MatchGenericError(err error) (int, APIError) {
 		}
 	}
 
+	log.Err(err).Msg("unhandled http error")
+
 	return http.StatusInternalServerError, APIError{
 		Code:   UnexpectedError,
-		Errors: err.Error(),
+		Errors: "internal server error",
 	}
 }

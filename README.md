@@ -28,3 +28,4 @@ Just writing some golang with things that I like to see in a Web API
 
 - Use testcontainers with test suite
 - Associate error logs with request
+- Save access token to other make requests

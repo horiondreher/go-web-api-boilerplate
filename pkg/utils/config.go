@@ -4,29 +4,37 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/knadh/koanf/parsers/dotenv"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Environment          string        `mapstructure:"ENVIRONMENT"`
-	DBName               string        `mapstructure:"POSTGRES_DB"`
-	DBUser               string        `mapstructure:"POSTGRES_USER"`
-	DBPassword           string        `mapstructure:"POSTGRES_PASSWORD"`
-	DBSource             string        `mapstructure:"DB_SOURCE"`
-	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	Environment          string        `validate:"required" koanf:"ENVIRONMENT"`
+	HTTPServerAddress    string        `validate:"required" koanf:"HTTP_SERVER_ADDRESS"`
+	DBName               string        `validate:"required" koanf:"POSTGRES_DB"`
+	DBUser               string        `validate:"required" koanf:"POSTGRES_USER"`
+	DBPassword           string        `validate:"required" koanf:"POSTGRES_PASSWORD"`
+	DBSource             string        `validate:"required" koanf:"DB_SOURCE"`
+	TokenSymmetricKey    string        `validate:"required" koanf:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration  time.Duration `validate:"required" koanf:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration time.Duration `validate:"required" koanf:"REFRESH_TOKEN_DURATION"`
 }
 
+var configFile string = "app.env"
+
 var (
+	k        *koanf.Koanf
 	instance *Config
 	once     sync.Once
 )
 
-func SetConfigPath(path string) {
-	viper.AddConfigPath(path)
+// should be used before first call of GetConfig (only for testing)
+func SetConfigFile(file string) {
+	configFile = file
 }
 
 // GetConfig returns the configuration instance using once.Do to ensure that the configuration is loaded only once
@@ -35,26 +43,36 @@ func GetConfig() *Config {
 	once.Do(func() {
 		var err error
 
-		log.Info().Msg("Loading config...")
+		k = koanf.New(".")
+		validate := validator.New(validator.WithRequiredStructEnabled())
 
-		instance = &Config{}
+		log.Info().Msg("loading config...")
 
-		viper.AddConfigPath(".")
-		viper.SetConfigName("app")
-		viper.SetConfigType("env")
+		fileProvider := file.Provider(configFile)
+		envProvider := env.Provider("", ".", nil)
 
-		viper.AutomaticEnv()
-
-		err = viper.ReadInConfig()
+		err = k.Load(fileProvider, dotenv.Parser())
 
 		if err != nil {
-			log.Panic().Err(err).Msg("error loading config")
+			log.Info().Msgf("could not load config file: %s", err.Error())
 		}
 
-		err = viper.Unmarshal(instance)
+		err = k.Load(envProvider, nil)
 
 		if err != nil {
-			log.Panic().Err(err).Msg("error unmarshalling config")
+			log.Info().Msgf("could not environment variables: %s", err.Error())
+		}
+
+		err = k.Unmarshal("", &instance)
+
+		if err != nil {
+			log.Panic().Err(err).Msg("error unmarshing config")
+		}
+
+		err = validate.Struct(instance)
+
+		if err != nil {
+			log.Panic().Err(err).Msg("correct configs were not loaded")
 		}
 	})
 
