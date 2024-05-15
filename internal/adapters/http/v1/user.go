@@ -15,57 +15,51 @@ func (e *SessionError) Error() string {
 	return e.msg
 }
 
-func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) {
+func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) error {
 	user, err := decode[entities.CreateUserRequestDto](r)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	err = validate.Struct(user)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	userResponse, err := adapter.userService.CreateUser(user)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	encode(w, r, http.StatusCreated, userResponse)
+
+	return nil
 }
 
-func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) {
+func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) error {
 	user, err := decode[entities.LoginUserRequestDto](r)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	err = validate.Struct(user)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	userResponse, err := adapter.userService.LoginUser(user)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	accessToken, accessPayload, err := adapter.tokenMaker.CreateToken(userResponse.Email, "user", adapter.config.AccessTokenDuration)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	refreshToken, refreshPayload, err := adapter.tokenMaker.CreateToken(userResponse.Email, "user", adapter.config.RefreshTokenDuration)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	userResponse.AccessToken = accessToken
@@ -76,63 +70,55 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) {
 	_, err = adapter.userService.CreateUserSession(refreshPayload.ID, &userResponse, r.UserAgent(), r.RemoteAddr)
 
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	encode(w, r, http.StatusOK, userResponse)
+
+	return nil
 }
 
-func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Request) {
+func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Request) error {
 	renewAccessDto, err := decode[entities.RenewAccessTokenRequestDto](r)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	err = validate.Struct(renewAccessDto)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	refreshPayload, err := adapter.tokenMaker.VerifyToken(renewAccessDto.RefreshToken)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	session, err := adapter.userService.GetUserSession(refreshPayload.ID)
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	if session.IsBlocked {
-		errorResponse(w, r, &SessionError{msg: "Session is blocked"})
-		return
+		return errorResponse(&SessionError{msg: "Session is blocked"})
 	}
 
 	if session.UserEmail != refreshPayload.Email {
-		errorResponse(w, r, &SessionError{msg: "Invalid session user"})
-		return
+		return errorResponse(&SessionError{msg: "Invalid session user"})
 	}
 
 	if session.RefreshToken != renewAccessDto.RefreshToken {
-		errorResponse(w, r, &SessionError{msg: "Invalid refresh token"})
-		return
+		return errorResponse(&SessionError{msg: "Invalid refresh token"})
 	}
 
 	if time.Now().After(session.ExpiresAt) {
-		errorResponse(w, r, &SessionError{msg: "Session expired"})
-		return
+		return errorResponse(&SessionError{msg: "Session expired"})
 	}
 
 	accessToken, accessPayload, err := adapter.tokenMaker.CreateToken(session.UserEmail, "user", adapter.config.AccessTokenDuration)
 
 	if err != nil {
-		errorResponse(w, r, err)
-		return
+		return errorResponse(err)
 	}
 
 	renewAccessTokenResponse := entities.RenewAccessTokenResponseDto{
@@ -141,4 +127,6 @@ func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Requ
 	}
 
 	encode(w, r, http.StatusOK, renewAccessTokenResponse)
+
+	return nil
 }

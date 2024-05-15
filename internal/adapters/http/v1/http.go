@@ -3,11 +3,13 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"reflect"
 	"strings"
 	"time"
 
+	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
 	"github.com/horiondreher/go-boilerplate/internal/application/ports"
@@ -87,13 +89,35 @@ func (adapter *HTTPAdapter) setupRouter() {
 	v1Router := chi.NewRouter()
 	v1Router.Use(middleware.Logger)
 
-	v1Router.Post("/users", adapter.createUser)
-	v1Router.Post("/login", adapter.loginUser)
-	v1Router.Post("/renew-token", adapter.renewAccessToken)
+	v1Router.Post("/users", adapter.handlerWrapper(adapter.createUser))
+	v1Router.Post("/login", adapter.handlerWrapper(adapter.loginUser))
+	v1Router.Post("/renew-token", adapter.handlerWrapper(adapter.renewAccessToken))
 
 	router.Mount("/api/v1", v1Router)
 
 	adapter.router = router
+}
+
+type HandlerWrapper func(w http.ResponseWriter, r *http.Request) error
+
+func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if apiErr := handlerFn(w, r); apiErr != nil {
+			var apiErrIntf apierrs.APIError
+			var err error
+
+			if errors.As(apiErr, &apiErrIntf) {
+				err = encode(w, r, apiErrIntf.HTTPCode, apiErrIntf.Body)
+
+			} else {
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+
+			if err != nil {
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+		}
+	}
 }
 
 func (adapter *HTTPAdapter) printRoutes(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {

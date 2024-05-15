@@ -1,6 +1,10 @@
 package apierrs
 
-import "github.com/jackc/pgx/v5/pgconn"
+import (
+	"net/http"
+
+	"github.com/jackc/pgx/v5/pgconn"
+)
 
 func MapDuplicateError(constraintName string) string {
 	var errorMessage string
@@ -13,16 +17,20 @@ func MapDuplicateError(constraintName string) string {
 	return errorMessage
 }
 
-func TransformPostgresError(err *pgconn.PgError) APIError {
+func TransformPostgresError(err *pgconn.PgError) error {
 	httpError := APIError{
-		Code:   QueryError,
-		Errors: err.ConstraintName,
+		HTTPCode: http.StatusBadRequest,
+		Body: APIErrorBody{
+			Code:   QueryError,
+			Errors: err.ConstraintName,
+		},
 	}
 
 	switch err.Code {
 	case "23505":
-		httpError.Code = DuplicateError
-		httpError.Errors = MapDuplicateError(err.ConstraintName)
+		httpError.HTTPCode = http.StatusConflict
+		httpError.Body.Code = DuplicateError
+		httpError.Body.Errors = MapDuplicateError(err.ConstraintName)
 	}
 
 	return httpError

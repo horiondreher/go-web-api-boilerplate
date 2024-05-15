@@ -44,35 +44,35 @@ func TestCreateUserV1(t *testing.T) {
 			name: "CreateUserWithInvalidEmail",
 			body: fmt.Sprintf(`{"full_name": "%s", "email": "%s", "password": "%s"}`, user.full_name, "invalid_email", user.password),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "CreateUserWithoutName",
 			body: fmt.Sprintf(`{"email": "%s", "password": "%s"}`, user.email, user.password),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "CreateUserWithoutEmail",
 			body: fmt.Sprintf(`{"full_name": "%s", "password": "%s"}`, user.full_name, user.password),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "CreateUserWithoutPassword",
 			body: fmt.Sprintf(`{"full_name": "%s", "email": "%s"}`, user.full_name, user.email),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "CreateUserWithEmptyBody",
 			body: `{}`,
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
@@ -100,7 +100,8 @@ func TestCreateUserV1(t *testing.T) {
 
 			require.NoError(t, err)
 
-			server.createUser(recorder, req)
+			handlerFn := server.handlerWrapper(server.createUser)
+			handlerFn(recorder, req)
 
 			tc.checkResponse(recorder)
 		})
@@ -150,28 +151,28 @@ func TestLoginUser(t *testing.T) {
 			name: "LoginUserWithInvalidEmail",
 			body: fmt.Sprintf(`{"email": "%s", "password": "%s"}`, "invalid_email", user.password),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "LoginUserWithoutEmail",
 			body: fmt.Sprintf(`{"password": "%s"}`, user.password),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "LoginUserWithEmptyPassword",
 			body: fmt.Sprintf(`{"email": "%s"}`, user.email),
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
 			name: "LoginUserWithEmptyBody",
 			body: `{}`,
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 			},
 		},
 		{
@@ -199,7 +200,8 @@ func TestLoginUser(t *testing.T) {
 
 			require.NoError(t, err)
 
-			server.loginUser(recorder, req)
+			handlerFn := server.handlerWrapper(server.loginUser)
+			handlerFn(recorder, req)
 
 			tc.checkResponse(recorder)
 		})

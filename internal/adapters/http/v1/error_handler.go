@@ -9,45 +9,39 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/rs/zerolog/log"
 )
 
-func errorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	var encodeErr error
-
+func errorResponse(err error) error {
 	switch e := err.(type) {
 	case validator.ValidationErrors:
-		errBody := apierrs.TransformValidatorError(e)
-		encodeErr = encode(w, r, http.StatusBadRequest, errBody)
+		return apierrs.TransformValidatorError(e)
 	case *json.UnmarshalTypeError:
-		errBody := apierrs.TransformUnmarshalError(e)
-		encodeErr = encode(w, r, http.StatusBadRequest, errBody)
+		return apierrs.TransformUnmarshalError(e)
 	case *pgconn.PgError:
-		errBody := apierrs.TransformPostgresError(e)
-		encodeErr = encode(w, r, http.StatusBadRequest, errBody)
+		return apierrs.TransformPostgresError(e)
 	case *utils.HashError:
-		encodeErr = encode(w, r, http.StatusInternalServerError, apierrs.APIError{
-			Code:   apierrs.InternalError,
-			Errors: e.Error(),
-		})
+		return apierrs.APIError{
+			HTTPCode: http.StatusInternalServerError,
+			Body: apierrs.APIErrorBody{
+				Code:   apierrs.InternalError,
+				Errors: e.Error(),
+			},
+		}
 	case *SessionError:
-		encodeErr = encode(w, r, http.StatusUnauthorized, apierrs.APIError{
-			Code:   apierrs.UnauthorizedError,
-			Errors: e.Error(),
-		})
+		return apierrs.APIError{
+			HTTPCode: http.StatusUnauthorized,
+			Body: apierrs.APIErrorBody{
+				Code:   apierrs.UnauthorizedError,
+				Errors: e.Error(),
+			},
+		}
 	default:
-		httpCode, httpError := apierrs.MatchGenericError(e)
-		encodeErr = encode(w, r, httpCode, httpError)
-	}
-
-	if encodeErr != nil {
-		log.Err(encodeErr).Msg("Error encoding response")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return apierrs.MatchGenericError(e)
 	}
 }
 
 func notFoundResponse(w http.ResponseWriter, r *http.Request) {
-	httpError := apierrs.APIError{
+	httpError := apierrs.APIErrorBody{
 		Code:   apierrs.NotFoundError,
 		Errors: "The requested resource was not found",
 	}
@@ -56,7 +50,7 @@ func notFoundResponse(w http.ResponseWriter, r *http.Request) {
 }
 
 func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
-	httpError := apierrs.APIError{
+	httpError := apierrs.APIErrorBody{
 		Code:   apierrs.MehodNotAllowedError,
 		Errors: "The request method is not allowed",
 	}

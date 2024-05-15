@@ -3,6 +3,7 @@ package apierrs
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -22,7 +23,7 @@ func MapValidationTags(tag string) string {
 	return tagMessage
 }
 
-func TransformValidatorError(err validator.ValidationErrors) APIError {
+func TransformValidatorError(err validator.ValidationErrors) error {
 	errors := make(map[string]string)
 
 	for _, e := range err {
@@ -30,18 +31,24 @@ func TransformValidatorError(err validator.ValidationErrors) APIError {
 	}
 
 	return APIError{
-		Code:   ValidationError,
-		Errors: errors,
+		HTTPCode: http.StatusUnprocessableEntity,
+		Body: APIErrorBody{
+			Code:   ValidationError,
+			Errors: errors,
+		},
 	}
 }
 
-func TransformUnmarshalError(err *json.UnmarshalTypeError) APIError {
+func TransformUnmarshalError(err *json.UnmarshalTypeError) error {
 	errors := make(map[string]string)
 
 	errors[err.Field] = fmt.Sprintf("The field is invalid. Expected type %v", err.Type)
 
 	return APIError{
-		Code:   JsonDecodeError,
-		Errors: errors,
+		HTTPCode: http.StatusUnprocessableEntity,
+		Body: APIErrorBody{
+			Code:   JsonDecodeError,
+			Errors: errors,
+		},
 	}
 }
