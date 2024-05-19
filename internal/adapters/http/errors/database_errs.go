@@ -19,7 +19,8 @@ func MapDuplicateError(constraintName string) string {
 
 func TransformPostgresError(err *pgconn.PgError) error {
 	httpError := APIError{
-		HTTPCode: http.StatusBadRequest,
+		HTTPCode:      http.StatusBadRequest,
+		OriginalError: err.Error(),
 		Body: APIErrorBody{
 			Code:   QueryError,
 			Errors: err.ConstraintName,

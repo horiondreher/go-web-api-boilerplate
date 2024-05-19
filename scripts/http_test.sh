@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ -z "$1" ]; then
   echo "Please provide an action"
   exit 1
@@ -17,35 +19,46 @@ JSON_CONTENT_TYPE="Content-Type: application/json"
 # JSON files
 LOGIN_JSON_FILE="json/login.json"
 USER_JSON_FILE="json/create_user.json"
-RENEW_TOKEN_JSON_FILE="json/renew_token.json"
+
+# Token file
+TOKEN_FILE="temp/tokens.json"
+
 
 send_post_request() {
   local url=$1
   local json_file=$2
+  local jq_filter=${3:-.}
   local json_data
 
-  json_data=$(jq '.' "$json_file")
+  json_data=$(jq "$jq_filter" "$json_file") || exit 1
   
-  curl -s -X POST "$url" -H "$JSON_CONTENT_TYPE" -d "$json_data" -w "%{http_code}\n" | {
-    read -r body
-    read -r code
-    printf "Response code: %s\n\n" "$code"
-    jq <<< "$body"
-  }
+  curl -s -X POST "$url" -H "$JSON_CONTENT_TYPE" -d "$json_data" -w "%{http_code}\n" 
+}
+
+save_tokens() {
+  echo "$1" | sed '$d' | jq '{access_token: .access_token, refresh_token: .refresh_token}' > "$TOKEN_FILE"
 }
 
 case $ACTION in
   login)
-    send_post_request "$BASE_URL/login" "$LOGIN_JSON_FILE"
+    response=$(send_post_request "$BASE_URL/login" "$LOGIN_JSON_FILE")
+    save_tokens "$response"
     ;;
   create_user)
-    send_post_request "$BASE_URL/users" "$USER_JSON_FILE"
+    response=$(send_post_request "$BASE_URL/users" "$USER_JSON_FILE")
     ;;
   renew_token)
-    send_post_request "$BASE_URL/renew-token" "$RENEW_TOKEN_JSON_FILE"
+    response=$(send_post_request "$BASE_URL/renew-token" "$TOKEN_FILE" '{refresh_token: .refresh_token}')
+    save_tokens "$response"
     ;;
   *)
     echo "Invalid action: $ACTION"
     exit 1
     ;;
 esac
+
+http_code=$(echo "$response" | tail -n1)
+response_body=$(echo "$response" | sed '$d')
+
+echo "$response_body" | jq
+echo "Response Code: $http_code"

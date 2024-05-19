@@ -64,7 +64,7 @@ func NewHTTPAdapter(userService ports.Service) (*HTTPAdapter, error) {
 }
 
 func (adapter *HTTPAdapter) Start() error {
-	log.Info().Str("address", adapter.server.Addr).Msg("Starting server")
+	log.Info().Str("address", adapter.server.Addr).Msg("starting server")
 
 	chi.Walk(adapter.router, adapter.printRoutes)
 
@@ -87,6 +87,7 @@ func (adapter *HTTPAdapter) setupRouter() {
 	router.MethodNotAllowed(methodNotAllowedResponse)
 
 	v1Router := chi.NewRouter()
+	v1Router.Use(middleware.RequestID)
 	v1Router.Use(middleware.Logger)
 
 	v1Router.Post("/users", adapter.handlerWrapper(adapter.createUser))
@@ -106,7 +107,13 @@ func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.Handle
 			var apiErrIntf apierrs.APIError
 			var err error
 
+			var requestID string
+			if requestIdVal, ok := r.Context().Value(middleware.KeyRequestID).(string); ok {
+				requestID = requestIdVal
+			}
+
 			if errors.As(apiErr, &apiErrIntf) {
+				log.Info().Str("id", requestID).Str("error message", apiErrIntf.OriginalError).Msg("request error")
 				err = encode(w, r, apiErrIntf.HTTPCode, apiErrIntf.Body)
 
 			} else {
@@ -114,6 +121,7 @@ func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.Handle
 			}
 
 			if err != nil {
+				log.Err(err).Msg("error encoding response")
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			}
 		}
@@ -121,7 +129,7 @@ func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.Handle
 }
 
 func (adapter *HTTPAdapter) printRoutes(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-	log.Info().Str("method", method).Str("route", route).Msg("Route registered")
+	log.Info().Str("method", method).Str("route", route).Msg("route registered")
 	return nil
 }
 

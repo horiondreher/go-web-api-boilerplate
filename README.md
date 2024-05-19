@@ -5,7 +5,7 @@ Just writing some golang with things that I like to see in a Web API
 
 ## Features
 
-- Hexagonal Architecture (kinda overengineering but ok, also, just wrote like this to see how it goes)
+- Hexagonal Architecture (kinda overengineering but ok. Also, just wrote like this to see how it goes)
 - Simple routing with chi
 - Centralized encoding and decoding
 - Centralized error handling
@@ -27,5 +27,3 @@ Just writing some golang with things that I like to see in a Web API
 ## TODO
 
 - Use testcontainers with test suite
-- Associate error logs with request
-- Save access token to other make requests

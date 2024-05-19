@@ -31,7 +31,8 @@ func TransformValidatorError(err validator.ValidationErrors) error {
 	}
 
 	return APIError{
-		HTTPCode: http.StatusUnprocessableEntity,
+		HTTPCode:      http.StatusUnprocessableEntity,
+		OriginalError: err.Error(),
 		Body: APIErrorBody{
 			Code:   ValidationError,
 			Errors: errors,
@@ -45,7 +46,8 @@ func TransformUnmarshalError(err *json.UnmarshalTypeError) error {
 	errors[err.Field] = fmt.Sprintf("The field is invalid. Expected type %v", err.Type)
 
 	return APIError{
-		HTTPCode: http.StatusUnprocessableEntity,
+		HTTPCode:      http.StatusUnprocessableEntity,
+		OriginalError: err.Error(),
 		Body: APIErrorBody{
 			Code:   JsonDecodeError,
 			Errors: errors,

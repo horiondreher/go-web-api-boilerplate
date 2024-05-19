@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -12,7 +13,8 @@ import (
 func MatchGenericError(err error) error {
 	if errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) {
 		return APIError{
-			HTTPCode: http.StatusBadRequest,
+			HTTPCode:      http.StatusBadRequest,
+			OriginalError: err.Error(),
 			Body: APIErrorBody{
 				Code:   JsonDecodeError,
 				Errors: "The request body is invalid",
@@ -22,7 +24,8 @@ func MatchGenericError(err error) error {
 
 	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 		return APIError{
-			HTTPCode: http.StatusUnauthorized,
+			HTTPCode:      http.StatusUnauthorized,
+			OriginalError: err.Error(),
 			Body: APIErrorBody{
 				Code:   InvalidPasswordError,
 				Errors: "The password is invalid",
@@ -30,10 +33,33 @@ func MatchGenericError(err error) error {
 		}
 	}
 
+	if errors.Is(err, token.ErrInvalidToken) {
+		return APIError{
+			HTTPCode:      http.StatusUnauthorized,
+			OriginalError: err.Error(),
+			Body: APIErrorBody{
+				Code:   InvalidToken,
+				Errors: "Invalid token",
+			},
+		}
+	}
+
+	if errors.Is(err, token.ErrInvalidToken) {
+		return APIError{
+			HTTPCode:      http.StatusUnauthorized,
+			OriginalError: err.Error(),
+			Body: APIErrorBody{
+				Code:   ExpiredToken,
+				Errors: "Expired token",
+			},
+		}
+	}
+
 	log.Err(err).Msg("unhandled http error")
 
 	return APIError{
-		HTTPCode: http.StatusInternalServerError,
+		HTTPCode:      http.StatusInternalServerError,
+		OriginalError: err.Error(),
 		Body: APIErrorBody{
 			Code:   UnexpectedError,
 			Errors: "Internal server error",

@@ -13,11 +13,14 @@ var (
 	DuplicateError       = "data/duplicate"
 	QueryError           = "data/invalid-query"
 	UnauthorizedError    = "auth/unauthorized"
+	InvalidToken         = "auth/invalid-token"
+	ExpiredToken         = "auth/expired-token"
 )
 
 type APIError struct {
-	HTTPCode int
-	Body     APIErrorBody
+	HTTPCode      int
+	OriginalError string
+	Body          APIErrorBody
 }
 
 type APIErrorBody struct {

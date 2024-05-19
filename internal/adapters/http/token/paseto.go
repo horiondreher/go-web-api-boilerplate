@@ -6,7 +6,6 @@ import (
 
 	"github.com/aead/chacha20poly1305"
 	"github.com/o1egl/paseto"
-	"github.com/rs/zerolog/log"
 )
 
 type PasetoMaker struct {
@@ -31,7 +30,6 @@ func (maker *PasetoMaker) CreateToken(email string, role string, duration time.D
 	payload, err := NewPayload(email, role, duration)
 
 	if err != nil {
-		log.Err(err).Msg("error creating payload")
 		return "", payload, err
 	}
 

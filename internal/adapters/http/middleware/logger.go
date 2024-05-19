@@ -28,7 +28,8 @@ func Logger(next http.Handler) http.Handler {
 		next.ServeHTTP(customWriter, r)
 
 		statusCode := strconv.Itoa(customWriter.statusCode)
+		requestID := r.Context().Value(KeyRequestID).(string)
 
-		log.Info().Str("method", r.Method).Str("path", r.URL.Path).Str("response", statusCode).Msg("Request")
+		log.Info().Str("id", requestID).Str("method", r.Method).Str("path", r.URL.Path).Str("response", statusCode).Msg("request")
 	})
 }

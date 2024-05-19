@@ -21,7 +21,8 @@ func errorResponse(err error) error {
 		return apierrs.TransformPostgresError(e)
 	case *utils.HashError:
 		return apierrs.APIError{
-			HTTPCode: http.StatusInternalServerError,
+			HTTPCode:      http.StatusInternalServerError,
+			OriginalError: err.Error(),
 			Body: apierrs.APIErrorBody{
 				Code:   apierrs.InternalError,
 				Errors: e.Error(),
@@ -29,7 +30,8 @@ func errorResponse(err error) error {
 		}
 	case *SessionError:
 		return apierrs.APIError{
-			HTTPCode: http.StatusUnauthorized,
+			HTTPCode:      http.StatusUnauthorized,
+			OriginalError: err.Error(),
 			Body: apierrs.APIErrorBody{
 				Code:   apierrs.UnauthorizedError,
 				Errors: e.Error(),
