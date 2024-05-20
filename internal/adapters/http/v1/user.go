@@ -1,9 +1,14 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
+	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
+	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
 	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
 )
 
@@ -16,7 +21,7 @@ func (e *SessionError) Error() string {
 }
 
 func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) error {
-	user, err := decode[entities.CreateUserRequestDto](r)
+	user, err := httputils.Decode[entities.CreateUserRequestDto](r)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -31,13 +36,13 @@ func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) e
 		return errorResponse(err)
 	}
 
-	encode(w, r, http.StatusCreated, userResponse)
+	httputils.Encode(w, r, http.StatusCreated, userResponse)
 
 	return nil
 }
 
 func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) error {
-	user, err := decode[entities.LoginUserRequestDto](r)
+	user, err := httputils.Decode[entities.LoginUserRequestDto](r)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -73,13 +78,13 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) er
 		return errorResponse(err)
 	}
 
-	encode(w, r, http.StatusOK, userResponse)
+	httputils.Encode(w, r, http.StatusOK, userResponse)
 
 	return nil
 }
 
 func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Request) error {
-	renewAccessDto, err := decode[entities.RenewAccessTokenRequestDto](r)
+	renewAccessDto, err := httputils.Decode[entities.RenewAccessTokenRequestDto](r)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -126,7 +131,24 @@ func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Requ
 		AccessTokenExpiresAt: accessPayload.ExpiredAt,
 	}
 
-	encode(w, r, http.StatusOK, renewAccessTokenResponse)
+	httputils.Encode(w, r, http.StatusOK, renewAccessTokenResponse)
+
+	return nil
+}
+
+func (adapter *HTTPAdapter) getUser(w http.ResponseWriter, r *http.Request) error {
+
+	payload := r.Context().Value(middleware.KeyAuthUser).(*token.Payload)
+	requestID := middleware.GetRequestID(r.Context())
+
+	fmt.Println(payload)
+	fmt.Println(requestID)
+
+	userID := chi.URLParam(r, "id")
+
+	fmt.Println(userID)
+
+	// httputils.Encode(w, r, http.StatusOK, renewAccessTokenResponse)
 
 	return nil
 }

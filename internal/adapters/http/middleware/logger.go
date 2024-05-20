@@ -22,14 +22,18 @@ func NewResponseWriter(w http.ResponseWriter) *responseWriter {
 }
 
 func Logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		customWriter := NewResponseWriter(w)
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		requestID := r.Context().Value(KeyRequestID).(string)
 
+		log.Info().Str("id", requestID).Str("method", r.Method).Str("path", r.URL.Path).Msg("request received")
+
+		customWriter := NewResponseWriter(w)
 		next.ServeHTTP(customWriter, r)
 
 		statusCode := strconv.Itoa(customWriter.statusCode)
-		requestID := r.Context().Value(KeyRequestID).(string)
 
-		log.Info().Str("id", requestID).Str("method", r.Method).Str("path", r.URL.Path).Str("response", statusCode).Msg("request")
-	})
+		log.Info().Str("id", requestID).Str("method", r.Method).Str("path", r.URL.Path).Str("response", statusCode).Msg("request response")
+	}
+
+	return http.HandlerFunc(fn)
 }

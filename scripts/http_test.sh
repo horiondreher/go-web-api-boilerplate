@@ -35,6 +35,17 @@ send_post_request() {
   curl -s -X POST "$url" -H "$JSON_CONTENT_TYPE" -d "$json_data" -w "%{http_code}\n" 
 }
 
+send_get_request() {
+  local url=$1
+  local bearer_token 
+
+  if [ -f $TOKEN_FILE ]; then
+    bearer_token=$(jq -r '.access_token' "$TOKEN_FILE")
+  fi
+
+  curl -s -X GET "$url" -H "$JSON_CONTENT_TYPE" -H "Authorization: Bearer $bearer_token" -w "%{http_code}\n" 
+}
+
 save_tokens() {
   echo "$1" | sed '$d' | jq '{access_token: .access_token, refresh_token: .refresh_token}' > "$TOKEN_FILE"
 }
@@ -50,6 +61,9 @@ case $ACTION in
   renew_token)
     response=$(send_post_request "$BASE_URL/renew-token" "$TOKEN_FILE" '{refresh_token: .refresh_token}')
     save_tokens "$response"
+    ;;
+  get_user)
+    response=$(send_get_request "$BASE_URL/user/1")
     ;;
   *)
     echo "Invalid action: $ACTION"

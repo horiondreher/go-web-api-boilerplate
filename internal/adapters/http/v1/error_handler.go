@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
+	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-boilerplate/pkg/utils"
 	"github.com/jackc/pgx/v5/pgconn"
 
@@ -48,7 +49,7 @@ func notFoundResponse(w http.ResponseWriter, r *http.Request) {
 		Errors: "The requested resource was not found",
 	}
 
-	encode(w, r, http.StatusNotFound, httpError)
+	httputils.Encode(w, r, http.StatusNotFound, httpError)
 }
 
 func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
@@ -57,5 +58,5 @@ func methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 		Errors: "The request method is not allowed",
 	}
 
-	encode(w, r, http.StatusMethodNotAllowed, httpError)
+	httputils.Encode(w, r, http.StatusMethodNotAllowed, httpError)
 }

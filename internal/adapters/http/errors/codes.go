@@ -3,18 +3,18 @@ package apierrs
 import "fmt"
 
 var (
-	ValidationError      = "request/invalid-fields"
-	JsonDecodeError      = "request/invalid-json"
-	UnexpectedError      = "server/internal-error"
-	InvalidPasswordError = "auth/invalid-password"
-	InternalError        = "server/internal-error"
-	NotFoundError        = "server/not-found"
-	MehodNotAllowedError = "server/method-not-allowed"
-	DuplicateError       = "data/duplicate"
-	QueryError           = "data/invalid-query"
 	UnauthorizedError    = "auth/unauthorized"
 	InvalidToken         = "auth/invalid-token"
 	ExpiredToken         = "auth/expired-token"
+	InvalidPasswordError = "auth/invalid-password"
+	ValidationError      = "request/invalid-fields"
+	JsonDecodeError      = "request/invalid-json"
+	DuplicateError       = "data/duplicate"
+	QueryError           = "data/invalid-query"
+	UnexpectedError      = "server/internal-error"
+	InternalError        = "server/internal-error"
+	NotFoundError        = "server/not-found"
+	MehodNotAllowedError = "server/method-not-allowed"
 )
 
 type APIError struct {

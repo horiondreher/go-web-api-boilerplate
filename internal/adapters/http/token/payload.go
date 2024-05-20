@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrInvalidToken = errors.New("token is invalid")
-	ErrExpiredToken = errors.New("token has expired")
+	ErrInvalidToken    = errors.New("token is invalid")
+	ErrExpiredToken    = errors.New("token has expired")
+	ErrInvalidInstance = errors.New("paseto maker is not initialized")
 )
 
 type Payload struct {

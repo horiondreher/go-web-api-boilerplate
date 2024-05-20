@@ -41,6 +41,10 @@ func (maker *PasetoMaker) CreateToken(email string, role string, duration time.D
 func (maker *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}
 
+	if maker == nil || maker.paseto == nil {
+		return nil, ErrInvalidInstance
+	}
+
 	err := maker.paseto.Decrypt(token, maker.symmetricKey, payload, nil)
 
 	if err != nil {

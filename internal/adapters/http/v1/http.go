@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"reflect"
@@ -10,12 +9,14 @@ import (
 	"time"
 
 	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
+	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
 	"github.com/horiondreher/go-boilerplate/internal/application/ports"
 	"github.com/horiondreher/go-boilerplate/pkg/utils"
 
 	"github.com/go-chi/chi/v5"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
@@ -52,13 +53,16 @@ func NewHTTPAdapter(userService ports.Service) (*HTTPAdapter, error) {
 	}
 
 	setupValidator()
-	httpAdapter.setupRouter()
-	err := httpAdapter.setupServer()
+
+	err := httpAdapter.setupTokenMaker()
 
 	if err != nil {
 		log.Err(err).Msg("error setting up server")
 		return nil, err
 	}
+
+	httpAdapter.setupRouter()
+	httpAdapter.setupServer()
 
 	return httpAdapter, nil
 }
@@ -83,6 +87,9 @@ func (adapter *HTTPAdapter) Shutdown() {
 func (adapter *HTTPAdapter) setupRouter() {
 	router := chi.NewRouter()
 
+	router.Use(chiMiddleware.Recoverer)
+	router.Use(chiMiddleware.RedirectSlashes)
+
 	router.NotFound(notFoundResponse)
 	router.MethodNotAllowed(methodNotAllowedResponse)
 
@@ -93,6 +100,12 @@ func (adapter *HTTPAdapter) setupRouter() {
 	v1Router.Post("/users", adapter.handlerWrapper(adapter.createUser))
 	v1Router.Post("/login", adapter.handlerWrapper(adapter.loginUser))
 	v1Router.Post("/renew-token", adapter.handlerWrapper(adapter.renewAccessToken))
+
+	// private routes
+	v1Router.Group(func(r chi.Router) {
+		r.Use(middleware.Authentication(adapter.tokenMaker))
+		r.Get("/user/{id}", adapter.handlerWrapper(adapter.getUser))
+	})
 
 	router.Mount("/api/v1", v1Router)
 
@@ -107,14 +120,11 @@ func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.Handle
 			var apiErrIntf apierrs.APIError
 			var err error
 
-			var requestID string
-			if requestIdVal, ok := r.Context().Value(middleware.KeyRequestID).(string); ok {
-				requestID = requestIdVal
-			}
+			requestID := middleware.GetRequestID(r.Context())
 
 			if errors.As(apiErr, &apiErrIntf) {
 				log.Info().Str("id", requestID).Str("error message", apiErrIntf.OriginalError).Msg("request error")
-				err = encode(w, r, apiErrIntf.HTTPCode, apiErrIntf.Body)
+				err = httputils.Encode(w, r, apiErrIntf.HTTPCode, apiErrIntf.Body)
 
 			} else {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -133,44 +143,23 @@ func (adapter *HTTPAdapter) printRoutes(method string, route string, handler htt
 	return nil
 }
 
-func (adapter *HTTPAdapter) setupServer() error {
-
+func (adapter *HTTPAdapter) setupTokenMaker() error {
 	tokenMaker, err := token.NewPasetoMaker(adapter.config.TokenSymmetricKey)
 
 	if err != nil {
 		return err
 	}
 
+	adapter.tokenMaker = tokenMaker
+
+	return nil
+}
+
+func (adapter *HTTPAdapter) setupServer() {
 	server := &http.Server{
 		Addr:    adapter.config.HTTPServerAddress,
 		Handler: adapter.router,
 	}
 
-	adapter.tokenMaker = tokenMaker
 	adapter.server = server
-
-	return nil
-}
-
-func encode[T any](w http.ResponseWriter, _ *http.Request, status int, v T) error {
-	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application/json")
-
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		log.Err(err).Msg("error encoding json")
-		return err
-	}
-
-	return nil
-}
-
-func decode[T any](r *http.Request) (T, error) {
-	var v T
-
-	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
-		log.Err(err).Msg("error decoding JSON")
-		return v, err
-	}
-
-	return v, nil
 }
