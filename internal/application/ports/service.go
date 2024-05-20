@@ -11,4 +11,5 @@ type Service interface {
 	LoginUser(user entities.LoginUserRequestDto) (entities.LoginUserResponseDto, error)
 	CreateUserSession(refreshTokenID uuid.UUID, loggedUser *entities.LoginUserResponseDto, userAgent, clientIP string) (pgsqlc.Session, error)
 	GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Session, error)
+	GetUserByUID(userUID string) (entities.LoginUserResponseDto, error)
 }

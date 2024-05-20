@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -44,7 +43,7 @@ func MatchGenericError(err error) error {
 		}
 	}
 
-	if errors.Is(err, token.ErrInvalidToken) {
+	if errors.Is(err, token.ErrExpiredToken) {
 		return APIError{
 			HTTPCode:      http.StatusUnauthorized,
 			OriginalError: err.Error(),
@@ -54,8 +53,6 @@ func MatchGenericError(err error) error {
 			},
 		}
 	}
-
-	log.Err(err).Msg("unhandled http error")
 
 	return APIError{
 		HTTPCode:      http.StatusInternalServerError,

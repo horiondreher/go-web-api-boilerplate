@@ -9,6 +9,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -80,6 +81,30 @@ WHERE "email" = $1 LIMIT 1
 
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Uid,
+		&i.Email,
+		&i.Password,
+		&i.FullName,
+		&i.IsStaff,
+		&i.IsActive,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.ModifiedAt,
+	)
+	return i, err
+}
+
+const getUserByUID = `-- name: GetUserByUID :one
+SELECT id, uid, email, password, full_name, is_staff, is_active, last_login, created_at, modified_at
+FROM "user"
+WHERE "uid" = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByUID(ctx context.Context, uid uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByUID, uid)
 	var i User
 	err := row.Scan(
 		&i.ID,

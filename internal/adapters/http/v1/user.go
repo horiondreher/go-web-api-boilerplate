@@ -136,7 +136,7 @@ func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Requ
 	return nil
 }
 
-func (adapter *HTTPAdapter) getUser(w http.ResponseWriter, r *http.Request) error {
+func (adapter *HTTPAdapter) getUserByUID(w http.ResponseWriter, r *http.Request) error {
 
 	payload := r.Context().Value(middleware.KeyAuthUser).(*token.Payload)
 	requestID := middleware.GetRequestID(r.Context())
@@ -144,11 +144,17 @@ func (adapter *HTTPAdapter) getUser(w http.ResponseWriter, r *http.Request) erro
 	fmt.Println(payload)
 	fmt.Println(requestID)
 
-	userID := chi.URLParam(r, "id")
+	userID := chi.URLParam(r, "uid")
 
 	fmt.Println(userID)
 
-	// httputils.Encode(w, r, http.StatusOK, renewAccessTokenResponse)
+	user, err := adapter.userService.GetUserByUID(userID)
+
+	if err != nil {
+		return errorResponse(err)
+	}
+
+	httputils.Encode(w, r, http.StatusOK, user)
 
 	return nil
 }

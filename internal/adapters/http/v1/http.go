@@ -104,7 +104,7 @@ func (adapter *HTTPAdapter) setupRouter() {
 	// private routes
 	v1Router.Group(func(r chi.Router) {
 		r.Use(middleware.Authentication(adapter.tokenMaker))
-		r.Get("/user/{id}", adapter.handlerWrapper(adapter.getUser))
+		r.Get("/user/{uid}", adapter.handlerWrapper(adapter.getUserByUID))
 	})
 
 	router.Mount("/api/v1", v1Router)

@@ -30,8 +30,8 @@ CREATE TABLE "session" (
 
 -- Add indexes
 CREATE UNIQUE INDEX "user_email_idx" ON "user" USING BTREE ("email");
-CREATE INDEX "user_uid_idx" ON "user" USING BTREE ("uid");
-CREATE INDEX "session_uid_idx" ON "session" USING BTREE ("uid");
+CREATE UNIQUE INDEX "user_uid_idx" ON "user" USING BTREE ("uid");
+CREATE UNIQUE INDEX "session_uid_idx" ON "session" USING BTREE ("uid");
 
 -- Add constraints
 ALTER TABLE "session"

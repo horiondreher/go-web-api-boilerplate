@@ -25,7 +25,7 @@ type Session struct {
 
 type User struct {
 	ID         int64
-	Uid        pgtype.UUID
+	Uid        uuid.UUID
 	Email      string
 	Password   string
 	FullName   string

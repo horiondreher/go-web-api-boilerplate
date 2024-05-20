@@ -101,3 +101,23 @@ func (service *UserService) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Ses
 
 	return session, nil
 }
+
+func (service *UserService) GetUserByUID(userUID string) (entities.LoginUserResponseDto, error) {
+
+	parsedUID, err := uuid.Parse(userUID)
+
+	if err != nil {
+		return entities.LoginUserResponseDto{}, err
+	}
+
+	user, err := service.store.GetUserByUID(context.Background(), parsedUID)
+
+	if err != nil {
+		return entities.LoginUserResponseDto{}, err
+	}
+
+	return entities.LoginUserResponseDto{
+		ID:    user.ID,
+		Email: user.Email,
+	}, nil
+}

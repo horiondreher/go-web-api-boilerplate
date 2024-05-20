@@ -15,6 +15,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	GetSession(ctx context.Context, uid uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, email string) (User, error)
+	GetUserByUID(ctx context.Context, uid uuid.UUID) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

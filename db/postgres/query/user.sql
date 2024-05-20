@@ -24,3 +24,8 @@ VALUES (
 SELECT *
 FROM "user"
 WHERE "email" = $1 LIMIT 1;
+
+-- name: GetUserByUID :one
+SELECT *
+FROM "user"
+WHERE "uid" = $1 LIMIT 1;
