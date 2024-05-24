@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Session struct {
@@ -31,7 +30,7 @@ type User struct {
 	FullName   string
 	IsStaff    bool
 	IsActive   bool
-	LastLogin  pgtype.Timestamptz
+	LastLogin  time.Time
 	CreatedAt  time.Time
 	ModifiedAt time.Time
 }

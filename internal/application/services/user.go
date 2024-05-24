@@ -8,8 +8,6 @@ import (
 	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
 	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-boilerplate/pkg/utils"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UserService struct {
@@ -30,15 +28,12 @@ func (service *UserService) CreateUser(reqUser entities.CreateUserRequestDto) (e
 	}
 
 	args := pgsqlc.CreateUserParams{
-		Email:    reqUser.Email,
-		Password: hashedPassword,
-		FullName: reqUser.FullName,
-		IsStaff:  false,
-		IsActive: true,
-		LastLogin: pgtype.Timestamptz{
-			Time:  time.Now(),
-			Valid: true,
-		},
+		Email:     reqUser.Email,
+		Password:  hashedPassword,
+		FullName:  reqUser.FullName,
+		IsStaff:   false,
+		IsActive:  true,
+		LastLogin: time.Now(),
 	}
 
 	ctx := context.Background()

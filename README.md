@@ -23,7 +23,3 @@ Just writing some golang with things that I like to see in a Web API
 - golang-migrate
 - docker
 - sqlc
-
-## TODO
-
-- Use testcontainers with test suite

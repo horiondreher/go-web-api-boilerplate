@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -42,7 +41,7 @@ type CreateUserParams struct {
 	FullName  string
 	IsStaff   bool
 	IsActive  bool
-	LastLogin pgtype.Timestamptz
+	LastLogin time.Time
 }
 
 type CreateUserRow struct {
