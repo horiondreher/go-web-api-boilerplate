@@ -1,5 +1,5 @@
 
-# Go Boilerplate
+# Go Web API Boilerplate
 
 Just writing some golang with things that I like to see in a Web API
 
