@@ -13,7 +13,7 @@ import (
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
 	"github.com/horiondreher/go-boilerplate/internal/application/ports"
-	"github.com/horiondreher/go-boilerplate/pkg/utils"
+	"github.com/horiondreher/go-boilerplate/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -36,7 +36,7 @@ func setupValidator() {
 }
 
 type HTTPAdapter struct {
-	userService ports.Service
+	userService ports.UserService
 
 	config *utils.Config
 	router *chi.Mux
@@ -45,7 +45,7 @@ type HTTPAdapter struct {
 	tokenMaker *token.PasetoMaker
 }
 
-func NewHTTPAdapter(userService ports.Service) (*HTTPAdapter, error) {
+func NewHTTPAdapter(userService ports.UserService) (*HTTPAdapter, error) {
 
 	httpAdapter := &HTTPAdapter{
 		userService: userService,

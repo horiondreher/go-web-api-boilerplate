@@ -9,7 +9,7 @@ import (
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
-	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
+	"github.com/horiondreher/go-boilerplate/internal/domain"
 )
 
 type SessionError struct {
@@ -21,7 +21,7 @@ func (e *SessionError) Error() string {
 }
 
 func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) error {
-	user, err := httputils.Decode[entities.CreateUserRequestDto](r)
+	user, err := httputils.Decode[domain.CreateUserRequestDto](r)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -42,7 +42,7 @@ func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) e
 }
 
 func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) error {
-	user, err := httputils.Decode[entities.LoginUserRequestDto](r)
+	user, err := httputils.Decode[domain.LoginUserRequestDto](r)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -84,7 +84,7 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) er
 }
 
 func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Request) error {
-	renewAccessDto, err := httputils.Decode[entities.RenewAccessTokenRequestDto](r)
+	renewAccessDto, err := httputils.Decode[domain.RenewAccessTokenRequestDto](r)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -126,7 +126,7 @@ func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Requ
 		return errorResponse(err)
 	}
 
-	renewAccessTokenResponse := entities.RenewAccessTokenResponseDto{
+	renewAccessTokenResponse := domain.RenewAccessTokenResponseDto{
 		AccessToken:          accessToken,
 		AccessTokenExpiresAt: accessPayload.ExpiredAt,
 	}

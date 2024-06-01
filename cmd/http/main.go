@@ -10,7 +10,7 @@ import (
 	httpV1 "github.com/horiondreher/go-boilerplate/internal/adapters/http/v1"
 	service "github.com/horiondreher/go-boilerplate/internal/application/services"
 	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
-	"github.com/horiondreher/go-boilerplate/pkg/utils"
+	"github.com/horiondreher/go-boilerplate/internal/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	store := pgsqlc.New(conn)
-	userService := service.NewUserService(store)
+	userService := service.NewUserManager(store)
 	server, err := httpV1.NewHTTPAdapter(userService)
 
 	if err != nil {

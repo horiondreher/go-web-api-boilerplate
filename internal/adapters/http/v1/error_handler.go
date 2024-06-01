@@ -6,7 +6,7 @@ import (
 
 	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
 	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
-	"github.com/horiondreher/go-boilerplate/pkg/utils"
+	"github.com/horiondreher/go-boilerplate/internal/utils"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/go-playground/validator/v10"

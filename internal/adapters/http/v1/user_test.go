@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
-	"github.com/horiondreher/go-boilerplate/pkg/utils"
+	"github.com/horiondreher/go-boilerplate/internal/domain"
+	"github.com/horiondreher/go-boilerplate/internal/utils"
 
 	"github.com/stretchr/testify/require"
 )
@@ -109,7 +109,7 @@ func TestCreateUserV1(t *testing.T) {
 }
 
 func validateUserResponse(t *testing.T, response testUser, body *bytes.Buffer) {
-	var responseUser entities.CreateUserResponseDto
+	var responseUser domain.CreateUserResponseDto
 	err := json.NewDecoder(body).Decode(&responseUser)
 	require.NoError(t, err)
 
@@ -127,7 +127,7 @@ func TestLoginUser(t *testing.T) {
 		password:  utils.RandomString(6),
 	}
 
-	_, err := testUserService.CreateUser(entities.CreateUserRequestDto{
+	_, err := testUserService.CreateUser(domain.CreateUserRequestDto{
 		FullName: user.full_name,
 		Email:    user.email,
 		Password: user.password,

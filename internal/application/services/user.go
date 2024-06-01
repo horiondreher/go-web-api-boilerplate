@@ -5,26 +5,26 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/horiondreher/go-boilerplate/internal/domain/entities"
+	"github.com/horiondreher/go-boilerplate/internal/domain"
 	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
-	"github.com/horiondreher/go-boilerplate/pkg/utils"
+	"github.com/horiondreher/go-boilerplate/internal/utils"
 )
 
-type UserService struct {
+type UserManager struct {
 	store pgsqlc.Querier
 }
 
-func NewUserService(store pgsqlc.Querier) *UserService {
-	return &UserService{
+func NewUserManager(store pgsqlc.Querier) *UserManager {
+	return &UserManager{
 		store: store,
 	}
 }
 
-func (service *UserService) CreateUser(reqUser entities.CreateUserRequestDto) (entities.CreateUserResponseDto, error) {
+func (service *UserManager) CreateUser(reqUser domain.CreateUserRequestDto) (domain.CreateUserResponseDto, error) {
 	hashedPassword, err := utils.HashPassword(reqUser.Password)
 
 	if err != nil {
-		return entities.CreateUserResponseDto{}, err
+		return domain.CreateUserResponseDto{}, err
 	}
 
 	args := pgsqlc.CreateUserParams{
@@ -41,36 +41,36 @@ func (service *UserService) CreateUser(reqUser entities.CreateUserRequestDto) (e
 	user, err := service.store.CreateUser(ctx, args)
 
 	if err != nil {
-		return entities.CreateUserResponseDto{}, err
+		return domain.CreateUserResponseDto{}, err
 	}
 
-	return entities.CreateUserResponseDto{
+	return domain.CreateUserResponseDto{
 		ID:       user.ID,
 		FullName: user.FullName,
 		Email:    user.Email,
 	}, nil
 }
 
-func (service *UserService) LoginUser(reqUser entities.LoginUserRequestDto) (entities.LoginUserResponseDto, error) {
+func (service *UserManager) LoginUser(reqUser domain.LoginUserRequestDto) (domain.LoginUserResponseDto, error) {
 	user, err := service.store.GetUser(context.Background(), reqUser.Email)
 
 	if err != nil {
-		return entities.LoginUserResponseDto{}, err
+		return domain.LoginUserResponseDto{}, err
 	}
 
 	err = utils.CheckPassword(reqUser.Password, user.Password)
 
 	if err != nil {
-		return entities.LoginUserResponseDto{}, err
+		return domain.LoginUserResponseDto{}, err
 	}
 
-	return entities.LoginUserResponseDto{
+	return domain.LoginUserResponseDto{
 		ID:    user.ID,
 		Email: user.Email,
 	}, nil
 }
 
-func (service *UserService) CreateUserSession(refreshTokenID uuid.UUID, loggedUser *entities.LoginUserResponseDto, userAgent, clientIP string) (pgsqlc.Session, error) {
+func (service *UserManager) CreateUserSession(refreshTokenID uuid.UUID, loggedUser *domain.LoginUserResponseDto, userAgent, clientIP string) (pgsqlc.Session, error) {
 	session, err := service.store.CreateSession(context.Background(), pgsqlc.CreateSessionParams{
 		Uid:          refreshTokenID,
 		UserEmail:    loggedUser.Email,
@@ -87,7 +87,7 @@ func (service *UserService) CreateUserSession(refreshTokenID uuid.UUID, loggedUs
 	return session, nil
 }
 
-func (service *UserService) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Session, error) {
+func (service *UserManager) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Session, error) {
 	session, err := service.store.GetSession(context.Background(), refreshTokenID)
 
 	if err != nil {
@@ -97,21 +97,21 @@ func (service *UserService) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Ses
 	return session, nil
 }
 
-func (service *UserService) GetUserByUID(userUID string) (entities.LoginUserResponseDto, error) {
+func (service *UserManager) GetUserByUID(userUID string) (domain.LoginUserResponseDto, error) {
 
 	parsedUID, err := uuid.Parse(userUID)
 
 	if err != nil {
-		return entities.LoginUserResponseDto{}, err
+		return domain.LoginUserResponseDto{}, err
 	}
 
 	user, err := service.store.GetUserByUID(context.Background(), parsedUID)
 
 	if err != nil {
-		return entities.LoginUserResponseDto{}, err
+		return domain.LoginUserResponseDto{}, err
 	}
 
-	return entities.LoginUserResponseDto{
+	return domain.LoginUserResponseDto{
 		ID:    user.ID,
 		Email: user.Email,
 	}, nil
