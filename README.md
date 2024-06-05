@@ -14,7 +14,7 @@ Just writing some golang with things that I like to see in a Web API
 - Migrations with golang migrate
 - PASETO tokens instead of JWT
 - Access and Refresh Tokens
-- Tests that uses Testify Testcontainers instead of mocks
+- Tests that uses Testcontainers instead of mocks
 - Testing scripts that uses cURL and jq (f* Postman)
 
 ## Required dependencies
