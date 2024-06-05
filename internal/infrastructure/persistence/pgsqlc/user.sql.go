@@ -28,7 +28,7 @@ VALUES (
 	, $4
 	, $5
 	, $6
-	) RETURNING "id"
+	) RETURNING "uid"
 	, "email"
 	, "full_name"
 	, "created_at"
@@ -45,7 +45,7 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID         int64
+	UID        uuid.UUID
 	Email      string
 	FullName   string
 	CreatedAt  time.Time
@@ -63,7 +63,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	)
 	var i CreateUserRow
 	err := row.Scan(
-		&i.ID,
+		&i.UID,
 		&i.Email,
 		&i.FullName,
 		&i.CreatedAt,
@@ -83,7 +83,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Uid,
+		&i.UID,
 		&i.Email,
 		&i.Password,
 		&i.FullName,
@@ -107,7 +107,7 @@ func (q *Queries) GetUserByUID(ctx context.Context, uid uuid.UUID) (User, error)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Uid,
+		&i.UID,
 		&i.Email,
 		&i.Password,
 		&i.FullName,

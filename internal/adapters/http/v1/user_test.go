@@ -9,7 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/horiondreher/go-web-api-boilerplate/internal/domain"
+	"github.com/google/uuid"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/ports"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
 	"github.com/stretchr/testify/require"
@@ -110,15 +111,15 @@ func TestCreateUserV1(t *testing.T) {
 }
 
 func validateUserResponse(t *testing.T, response testUser, body *bytes.Buffer) {
-	var responseUser domain.CreateUserResponseDto
+	var responseUser CreateUserResponseDto
 	err := json.NewDecoder(body).Decode(&responseUser)
 	require.NoError(t, err)
 
 	require.Equal(t, response.full_name, responseUser.FullName)
 	require.Equal(t, response.email, responseUser.Email)
 
-	require.NotZero(t, responseUser.ID)
-	require.IsType(t, int64(0), responseUser.ID)
+	require.NotZero(t, responseUser.UID)
+	require.IsType(t, uuid.UUID{}, responseUser.UID)
 }
 
 func TestLoginUser(t *testing.T) {
@@ -128,7 +129,7 @@ func TestLoginUser(t *testing.T) {
 		password:  utils.RandomString(6),
 	}
 
-	_, err := testUserService.CreateUser(context.Background(), domain.CreateUserRequestDto{
+	_, err := testUserService.CreateUser(context.Background(), ports.NewUser{
 		FullName: user.full_name,
 		Email:    user.email,
 		Password: user.password,

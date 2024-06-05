@@ -11,6 +11,9 @@ sql:
       emit_json_tags: false
       emit_interface: true
       emit_empty_slices: true
+      rename:
+        uid: "UID"
+        client_ip: "ClientIP"
       overrides:
         - db_type: "timestamptz"
           go_type: "time.Time"

@@ -14,7 +14,7 @@ VALUES (
 	, $4
 	, $5
 	, $6
-	) RETURNING "id"
+	) RETURNING "uid"
 	, "email"
 	, "full_name"
 	, "created_at"

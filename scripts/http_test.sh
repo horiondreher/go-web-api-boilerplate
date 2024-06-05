@@ -63,7 +63,7 @@ case $ACTION in
     save_tokens "$response"
     ;;
   get_user)
-    response=$(send_get_request "$BASE_URL/user/1")
+    response=$(send_get_request "$BASE_URL/user/0b153fee-77f9-4eb7-b9fe-08927f0dae82")
     ;;
   *)
     echo "Invalid action: $ACTION"

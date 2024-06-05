@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	service "github.com/horiondreher/go-web-api-boilerplate/internal/application/services"
+	service "github.com/horiondreher/go-web-api-boilerplate/internal/domain/services"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 

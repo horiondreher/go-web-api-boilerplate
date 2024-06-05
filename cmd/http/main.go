@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	httpV1 "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/v1"
-	service "github.com/horiondreher/go-web-api-boilerplate/internal/application/services"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/services"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	store := pgsqlc.New(conn)
-	userService := service.NewUserManager(store)
+	userService := services.NewUserManager(store)
 	server, err := httpV1.NewHTTPAdapter(userService)
 
 	if err != nil {

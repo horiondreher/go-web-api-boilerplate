@@ -12,11 +12,11 @@ import (
 
 type Session struct {
 	ID           int64
-	Uid          uuid.UUID
+	UID          uuid.UUID
 	UserEmail    string
 	RefreshToken string
 	UserAgent    string
-	ClientIp     string
+	ClientIP     string
 	IsBlocked    bool
 	ExpiresAt    time.Time
 	CreatedAt    time.Time
@@ -24,7 +24,7 @@ type Session struct {
 
 type User struct {
 	ID         int64
-	Uid        uuid.UUID
+	UID        uuid.UUID
 	Email      string
 	Password   string
 	FullName   string

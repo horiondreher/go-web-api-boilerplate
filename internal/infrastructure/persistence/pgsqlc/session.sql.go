@@ -34,33 +34,33 @@ VALUES (
 `
 
 type CreateSessionParams struct {
-	Uid          uuid.UUID
+	UID          uuid.UUID
 	UserEmail    string
 	RefreshToken string
 	UserAgent    string
-	ClientIp     string
+	ClientIP     string
 	IsBlocked    bool
 	ExpiresAt    time.Time
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
 	row := q.db.QueryRow(ctx, createSession,
-		arg.Uid,
+		arg.UID,
 		arg.UserEmail,
 		arg.RefreshToken,
 		arg.UserAgent,
-		arg.ClientIp,
+		arg.ClientIP,
 		arg.IsBlocked,
 		arg.ExpiresAt,
 	)
 	var i Session
 	err := row.Scan(
 		&i.ID,
-		&i.Uid,
+		&i.UID,
 		&i.UserEmail,
 		&i.RefreshToken,
 		&i.UserAgent,
-		&i.ClientIp,
+		&i.ClientIP,
 		&i.IsBlocked,
 		&i.ExpiresAt,
 		&i.CreatedAt,
@@ -79,11 +79,11 @@ func (q *Queries) GetSession(ctx context.Context, uid uuid.UUID) (Session, error
 	var i Session
 	err := row.Scan(
 		&i.ID,
-		&i.Uid,
+		&i.UID,
 		&i.UserEmail,
 		&i.RefreshToken,
 		&i.UserAgent,
-		&i.ClientIp,
+		&i.ClientIP,
 		&i.IsBlocked,
 		&i.ExpiresAt,
 		&i.CreatedAt,
