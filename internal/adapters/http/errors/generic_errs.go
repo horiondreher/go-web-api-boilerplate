@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
 	"golang.org/x/crypto/bcrypt"
 )
 

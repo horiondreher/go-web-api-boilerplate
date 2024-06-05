@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/horiondreher/go-boilerplate/internal/domain"
-	"github.com/horiondreher/go-boilerplate/internal/utils"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
 	"github.com/stretchr/testify/require"
 )

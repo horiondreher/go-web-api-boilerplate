@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
+	apierrs "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/errors"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
 	"github.com/rs/zerolog/log"
 )
 

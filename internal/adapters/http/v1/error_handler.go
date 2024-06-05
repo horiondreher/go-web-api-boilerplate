@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
-	"github.com/horiondreher/go-boilerplate/internal/utils"
+	apierrs "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/errors"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/go-playground/validator/v10"

@@ -2,8 +2,8 @@ package ports
 
 import (
 	"github.com/google/uuid"
-	"github.com/horiondreher/go-boilerplate/internal/domain"
-	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
 )
 
 type UserService interface {

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
-	"github.com/horiondreher/go-boilerplate/internal/domain"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/middleware"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain"
 )
 
 type SessionError struct {

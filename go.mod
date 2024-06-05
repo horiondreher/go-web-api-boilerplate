@@ -1,4 +1,4 @@
-module github.com/horiondreher/go-boilerplate
+module github.com/horiondreher/go-web-api-boilerplate
 
 go 1.22.0
 

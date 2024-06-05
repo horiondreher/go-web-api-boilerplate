@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	service "github.com/horiondreher/go-boilerplate/internal/application/services"
-	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
-	"github.com/horiondreher/go-boilerplate/internal/utils"
+	service "github.com/horiondreher/go-web-api-boilerplate/internal/application/services"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"

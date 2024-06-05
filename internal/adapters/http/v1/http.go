@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	apierrs "github.com/horiondreher/go-boilerplate/internal/adapters/http/errors"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/httputils"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/middleware"
-	"github.com/horiondreher/go-boilerplate/internal/adapters/http/token"
-	"github.com/horiondreher/go-boilerplate/internal/application/ports"
-	"github.com/horiondreher/go-boilerplate/internal/utils"
+	apierrs "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/errors"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/middleware"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/application/ports"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/horiondreher/go-boilerplate/internal/domain"
-	"github.com/horiondreher/go-boilerplate/internal/infrastructure/persistence/pgsqlc"
-	"github.com/horiondreher/go-boilerplate/internal/utils"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 )
 
 type UserManager struct {
