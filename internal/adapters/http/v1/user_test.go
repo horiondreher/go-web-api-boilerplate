@@ -2,6 +2,7 @@ package v1
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -127,7 +128,7 @@ func TestLoginUser(t *testing.T) {
 		password:  utils.RandomString(6),
 	}
 
-	_, err := testUserService.CreateUser(domain.CreateUserRequestDto{
+	_, err := testUserService.CreateUser(context.Background(), domain.CreateUserRequestDto{
 		FullName: user.full_name,
 		Email:    user.email,
 		Password: user.password,

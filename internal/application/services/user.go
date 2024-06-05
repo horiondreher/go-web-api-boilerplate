@@ -20,7 +20,7 @@ func NewUserManager(store pgsqlc.Querier) *UserManager {
 	}
 }
 
-func (service *UserManager) CreateUser(reqUser domain.CreateUserRequestDto) (domain.CreateUserResponseDto, error) {
+func (service *UserManager) CreateUser(ctx context.Context, reqUser domain.CreateUserRequestDto) (domain.CreateUserResponseDto, error) {
 	hashedPassword, err := utils.HashPassword(reqUser.Password)
 
 	if err != nil {
@@ -36,8 +36,6 @@ func (service *UserManager) CreateUser(reqUser domain.CreateUserRequestDto) (dom
 		LastLogin: time.Now(),
 	}
 
-	ctx := context.Background()
-
 	user, err := service.store.CreateUser(ctx, args)
 
 	if err != nil {
@@ -51,8 +49,8 @@ func (service *UserManager) CreateUser(reqUser domain.CreateUserRequestDto) (dom
 	}, nil
 }
 
-func (service *UserManager) LoginUser(reqUser domain.LoginUserRequestDto) (domain.LoginUserResponseDto, error) {
-	user, err := service.store.GetUser(context.Background(), reqUser.Email)
+func (service *UserManager) LoginUser(ctx context.Context, reqUser domain.LoginUserRequestDto) (domain.LoginUserResponseDto, error) {
+	user, err := service.store.GetUser(ctx, reqUser.Email)
 
 	if err != nil {
 		return domain.LoginUserResponseDto{}, err
@@ -70,8 +68,8 @@ func (service *UserManager) LoginUser(reqUser domain.LoginUserRequestDto) (domai
 	}, nil
 }
 
-func (service *UserManager) CreateUserSession(refreshTokenID uuid.UUID, loggedUser *domain.LoginUserResponseDto, userAgent, clientIP string) (pgsqlc.Session, error) {
-	session, err := service.store.CreateSession(context.Background(), pgsqlc.CreateSessionParams{
+func (service *UserManager) CreateUserSession(ctx context.Context, refreshTokenID uuid.UUID, loggedUser *domain.LoginUserResponseDto, userAgent, clientIP string) (pgsqlc.Session, error) {
+	session, err := service.store.CreateSession(ctx, pgsqlc.CreateSessionParams{
 		Uid:          refreshTokenID,
 		UserEmail:    loggedUser.Email,
 		RefreshToken: loggedUser.RefreshToken,
@@ -87,8 +85,8 @@ func (service *UserManager) CreateUserSession(refreshTokenID uuid.UUID, loggedUs
 	return session, nil
 }
 
-func (service *UserManager) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Session, error) {
-	session, err := service.store.GetSession(context.Background(), refreshTokenID)
+func (service *UserManager) GetUserSession(ctx context.Context, refreshTokenID uuid.UUID) (pgsqlc.Session, error) {
+	session, err := service.store.GetSession(ctx, refreshTokenID)
 
 	if err != nil {
 		return pgsqlc.Session{}, err
@@ -97,7 +95,7 @@ func (service *UserManager) GetUserSession(refreshTokenID uuid.UUID) (pgsqlc.Ses
 	return session, nil
 }
 
-func (service *UserManager) GetUserByUID(userUID string) (domain.LoginUserResponseDto, error) {
+func (service *UserManager) GetUserByUID(ctx context.Context, userUID string) (domain.LoginUserResponseDto, error) {
 
 	parsedUID, err := uuid.Parse(userUID)
 
@@ -105,7 +103,7 @@ func (service *UserManager) GetUserByUID(userUID string) (domain.LoginUserRespon
 		return domain.LoginUserResponseDto{}, err
 	}
 
-	user, err := service.store.GetUserByUID(context.Background(), parsedUID)
+	user, err := service.store.GetUserByUID(ctx, parsedUID)
 
 	if err != nil {
 		return domain.LoginUserResponseDto{}, err

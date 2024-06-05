@@ -31,7 +31,7 @@ func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) e
 		return errorResponse(err)
 	}
 
-	userResponse, err := adapter.userService.CreateUser(user)
+	userResponse, err := adapter.userService.CreateUser(r.Context(), user)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -52,7 +52,7 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) er
 		return errorResponse(err)
 	}
 
-	userResponse, err := adapter.userService.LoginUser(user)
+	userResponse, err := adapter.userService.LoginUser(r.Context(), user)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -72,7 +72,7 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) er
 	userResponse.RefreshToken = refreshToken
 	userResponse.RefreshTokenExpiresAt = refreshPayload.ExpiredAt
 
-	_, err = adapter.userService.CreateUserSession(refreshPayload.ID, &userResponse, r.UserAgent(), r.RemoteAddr)
+	_, err = adapter.userService.CreateUserSession(r.Context(), refreshPayload.ID, &userResponse, r.UserAgent(), r.RemoteAddr)
 
 	if err != nil {
 		return errorResponse(err)
@@ -99,7 +99,7 @@ func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Requ
 		return errorResponse(err)
 	}
 
-	session, err := adapter.userService.GetUserSession(refreshPayload.ID)
+	session, err := adapter.userService.GetUserSession(r.Context(), refreshPayload.ID)
 	if err != nil {
 		return errorResponse(err)
 	}
@@ -148,7 +148,7 @@ func (adapter *HTTPAdapter) getUserByUID(w http.ResponseWriter, r *http.Request)
 
 	fmt.Println(userID)
 
-	user, err := adapter.userService.GetUserByUID(userID)
+	user, err := adapter.userService.GetUserByUID(r.Context(), userID)
 
 	if err != nil {
 		return errorResponse(err)
