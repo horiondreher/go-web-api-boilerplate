@@ -19,12 +19,13 @@ type Config struct {
 	DBUser               string        `validate:"required" koanf:"POSTGRES_USER"`
 	DBPassword           string        `validate:"required" koanf:"POSTGRES_PASSWORD"`
 	DBSource             string        `validate:"required" koanf:"DB_SOURCE"`
+	MigrationURL         string        `validate:"required" koanf:"MIGRATION_URL"`
 	TokenSymmetricKey    string        `validate:"required" koanf:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `validate:"required" koanf:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `validate:"required" koanf:"REFRESH_TOKEN_DURATION"`
 }
 
-var configFile string = "app.env"
+var configFile string = ".env"
 
 var (
 	k        *koanf.Koanf

@@ -24,7 +24,7 @@ var testUserService *service.UserManager
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
-	utils.SetConfigFile("../../../../app.env")
+	utils.SetConfigFile("../../../../.env")
 	config := utils.GetConfig()
 
 	migrationsPath := filepath.Join("..", "..", "..", "..", "db", "postgres", "migration", "*.up.sql")

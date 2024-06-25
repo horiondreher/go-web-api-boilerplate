@@ -1,0 +1,4 @@
+# .dockerignore
+
+.data
+bin

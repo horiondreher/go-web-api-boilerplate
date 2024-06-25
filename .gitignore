@@ -2,6 +2,7 @@
 .data
 
 # env
+.env
 app.env
 scripts/temp/
 

@@ -7,6 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	httpV1 "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/v1"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/services"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
@@ -32,6 +35,8 @@ func main() {
 	defer stop()
 
 	config := utils.GetConfig()
+
+	runDBMigration(config.MigrationURL, config.DBSource)
 
 	conn, err := pgxpool.New(ctx, config.DBSource)
 
@@ -61,4 +66,17 @@ func main() {
 	server.Shutdown()
 
 	log.Info().Msg("server stopped")
+}
+
+func runDBMigration(migrationURL string, dbSource string) {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot create new migrate instance")
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal().Err(err).Msg("failed to run migrate up")
+	}
+
+	log.Info().Msg("db migrated successfully")
 }
