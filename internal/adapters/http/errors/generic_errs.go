@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,6 +51,17 @@ func MatchGenericError(err error) error {
 			Body: APIErrorBody{
 				Code:   ExpiredToken,
 				Errors: "Expired token",
+			},
+		}
+	}
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return APIError{
+			HTTPCode:      http.StatusNotFound,
+			OriginalError: err.Error(),
+			Body: APIErrorBody{
+				Code:   NotFoundError,
+				Errors: "Not found",
 			},
 		}
 	}
