@@ -2,9 +2,11 @@ package token
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/aead/chacha20poly1305"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/o1egl/paseto"
 )
 
@@ -26,35 +28,35 @@ func NewPasetoMaker(symmetricKey string) (*PasetoMaker, error) {
 	return maker, nil
 }
 
-func (maker *PasetoMaker) CreateToken(email string, role string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(email, role, duration)
-
-	if err != nil {
-		return "", payload, err
+func (maker *PasetoMaker) CreateToken(email string, role string, duration time.Duration) (string, *Payload, *domainerr.DomainError) {
+	payload, payloadErr := NewPayload(email, role, duration)
+	if payloadErr != nil {
+		return "", payload, payloadErr
 	}
 
 	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	if err != nil {
+		return token, nil, domainerr.NewInternalError(err)
+	}
 
-	return token, payload, err
+	return token, payload, nil
 }
 
-func (maker *PasetoMaker) VerifyToken(token string) (*Payload, error) {
+func (maker *PasetoMaker) VerifyToken(token string) (*Payload, *domainerr.DomainError) {
 	payload := &Payload{}
 
 	if maker == nil || maker.paseto == nil {
-		return nil, ErrInvalidInstance
+		return nil, domainerr.NewDomainError(http.StatusInternalServerError, domainerr.UnexpectedError, "internal server error", ErrInvalidInstance)
 	}
 
 	err := maker.paseto.Decrypt(token, maker.symmetricKey, payload, nil)
-
 	if err != nil {
-		return nil, ErrInvalidToken
+		return nil, domainerr.NewDomainError(http.StatusUnauthorized, domainerr.UnauthorizedError, "invalid token", ErrInvalidToken)
 	}
 
-	err = payload.Valid()
-
-	if err != nil {
-		return nil, err
+	validationErr := payload.Valid()
+	if validationErr != nil {
+		return nil, validationErr
 	}
 
 	return payload, nil

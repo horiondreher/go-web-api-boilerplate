@@ -11,8 +11,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	httpV1 "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/v1"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/pgsqlc"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/services"
-	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,7 +39,6 @@ func main() {
 	runDBMigration(config.MigrationURL, config.DBSource)
 
 	conn, err := pgxpool.New(ctx, config.DBSource)
-
 	if err != nil {
 		log.Err(err).Msg("error connecting to database")
 	}
@@ -47,7 +46,6 @@ func main() {
 	store := pgsqlc.New(conn)
 	userService := services.NewUserManager(store)
 	server, err := httpV1.NewHTTPAdapter(userService)
-
 	if err != nil {
 		log.Err(err).Msg("error creating server")
 		stop()

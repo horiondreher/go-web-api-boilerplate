@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	apierrs "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/errors"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/ports"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
@@ -46,7 +46,6 @@ type HTTPAdapter struct {
 }
 
 func NewHTTPAdapter(userService ports.UserService) (*HTTPAdapter, error) {
-
 	httpAdapter := &HTTPAdapter{
 		userService: userService,
 		config:      utils.GetConfig(),
@@ -55,7 +54,6 @@ func NewHTTPAdapter(userService ports.UserService) (*HTTPAdapter, error) {
 	setupValidator()
 
 	err := httpAdapter.setupTokenMaker()
-
 	if err != nil {
 		log.Err(err).Msg("error setting up server")
 		return nil, err
@@ -70,7 +68,7 @@ func NewHTTPAdapter(userService ports.UserService) (*HTTPAdapter, error) {
 func (adapter *HTTPAdapter) Start() error {
 	log.Info().Str("address", adapter.server.Addr).Msg("starting server")
 
-	chi.Walk(adapter.router, adapter.printRoutes)
+	_ = chi.Walk(adapter.router, adapter.printRoutes)
 
 	return adapter.server.ListenAndServe()
 }
@@ -112,19 +110,19 @@ func (adapter *HTTPAdapter) setupRouter() {
 	adapter.router = router
 }
 
-type HandlerWrapper func(w http.ResponseWriter, r *http.Request) error
+type HandlerWrapper func(w http.ResponseWriter, r *http.Request) *domainerr.DomainError
 
 func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if apiErr := handlerFn(w, r); apiErr != nil {
-			var apiErrIntf apierrs.APIError
+			var httpErrIntf *domainerr.DomainError
 			var err error
 
 			requestID := middleware.GetRequestID(r.Context())
 
-			if errors.As(apiErr, &apiErrIntf) {
-				log.Info().Str("id", requestID).Str("error message", apiErrIntf.OriginalError).Msg("request error")
-				err = httputils.Encode(w, r, apiErrIntf.HTTPCode, apiErrIntf.Body)
+			if errors.As(apiErr, &httpErrIntf) {
+				log.Info().Str("id", requestID).Str("error message", httpErrIntf.OriginalError).Msg("request error")
+				err = httputils.Encode(w, r, httpErrIntf.HTTPCode, httpErrIntf.HTTPErrorBody)
 
 			} else {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -145,7 +143,6 @@ func (adapter *HTTPAdapter) printRoutes(method string, route string, handler htt
 
 func (adapter *HTTPAdapter) setupTokenMaker() error {
 	tokenMaker, err := token.NewPasetoMaker(adapter.config.TokenSymmetricKey)
-
 	if err != nil {
 		return err
 	}

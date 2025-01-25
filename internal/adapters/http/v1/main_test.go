@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/pgsqlc"
 	service "github.com/horiondreher/go-web-api-boilerplate/internal/domain/services"
-	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/utils"
 
 	"github.com/testcontainers/testcontainers-go"
@@ -29,7 +29,6 @@ func TestMain(m *testing.M) {
 
 	migrationsPath := filepath.Join("..", "..", "..", "..", "db", "postgres", "migration", "*.up.sql")
 	upMigrations, err := filepath.Glob(migrationsPath)
-
 	if err != nil {
 		log.Fatalf("cannot find up migrations: %v", err)
 	}
@@ -45,19 +44,16 @@ func TestMain(m *testing.M) {
 				WithOccurrence(2).WithStartupTimeout(5*time.Second),
 		),
 	)
-
 	if err != nil {
 		log.Fatalf("cannot start postgres container: %v", err)
 	}
 
 	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
-
 	if err != nil {
 		log.Fatalf("cannot get connection string: %v", err)
 	}
 
 	conn, err := pgxpool.New(ctx, connStr)
-
 	if err != nil {
 		log.Fatalf("cannot connect to database: %v", err)
 	}

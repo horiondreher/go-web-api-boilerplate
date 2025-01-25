@@ -135,7 +135,7 @@ func TestLoginUser(t *testing.T) {
 		Password: user.password,
 	})
 
-	require.NoError(t, err)
+	require.Nil(t, err)
 
 	tt := []struct {
 		name          string

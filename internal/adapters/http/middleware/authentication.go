@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	apierrs "github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/errors"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/rs/zerolog/log"
 )
 
@@ -29,8 +29,8 @@ func Authentication(tokenMaker *token.PasetoMaker) func(next http.Handler) http.
 
 			if len(auth) == 0 {
 				log.Info().Str("id", requestID).Str("error message", "empty authorization header").Msg("request error")
-				httputils.Encode(w, r, http.StatusUnauthorized, apierrs.APIErrorBody{
-					Code:   apierrs.UnauthorizedError,
+				_ = httputils.Encode(w, r, http.StatusUnauthorized, domainerr.HTTPErrorBody{
+					Code:   domainerr.UnauthorizedError,
 					Errors: "Empty Authorization Header",
 				})
 				return
@@ -40,8 +40,8 @@ func Authentication(tokenMaker *token.PasetoMaker) func(next http.Handler) http.
 
 			if len(fields) < 2 {
 				log.Info().Str("id", requestID).Str("error message", "invalid authorization header").Msg("request error")
-				httputils.Encode(w, r, http.StatusUnauthorized, apierrs.APIErrorBody{
-					Code:   apierrs.UnauthorizedError,
+				_ = httputils.Encode(w, r, http.StatusUnauthorized, domainerr.HTTPErrorBody{
+					Code:   domainerr.UnauthorizedError,
 					Errors: "Invalid Authorization Header",
 				})
 				return
@@ -50,8 +50,8 @@ func Authentication(tokenMaker *token.PasetoMaker) func(next http.Handler) http.
 			authorizationType := strings.ToLower(fields[0])
 			if authorizationType != bearerAuth {
 				log.Info().Str("id", requestID).Str("error message", "invalid authorization type").Msg("request error")
-				httputils.Encode(w, r, http.StatusUnauthorized, apierrs.APIErrorBody{
-					Code:   apierrs.UnauthorizedError,
+				_ = httputils.Encode(w, r, http.StatusUnauthorized, domainerr.HTTPErrorBody{
+					Code:   domainerr.UnauthorizedError,
 					Errors: "Invalid Authorization Type",
 				})
 				return
@@ -62,9 +62,7 @@ func Authentication(tokenMaker *token.PasetoMaker) func(next http.Handler) http.
 			payload, err := tokenMaker.VerifyToken(accessToken)
 			if err != nil {
 				log.Info().Str("id", requestID).Str("error message", err.Error()).Msg("request error")
-				apiErr := apierrs.MatchGenericError(err).(apierrs.APIError)
-
-				httputils.Encode(w, r, http.StatusUnauthorized, apiErr.Body)
+				_ = httputils.Encode(w, r, http.StatusUnauthorized, err.HTTPErrorBody)
 				return
 			}
 
