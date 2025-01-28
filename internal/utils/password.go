@@ -1,6 +1,11 @@
 package utils
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"net/http"
+
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type HashError struct {
 	msg string
@@ -10,16 +15,20 @@ func (e *HashError) Error() string {
 	return e.msg
 }
 
-func HashPassword(password string) (string, error) {
+func HashPassword(password string) (string, *domainerr.DomainError) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
 	if err != nil {
-		return "", &HashError{msg: "Error hashing password"}
+		return "", domainerr.NewDomainError(http.StatusInternalServerError, domainerr.InternalError, err.Error(), err)
 	}
 
 	return string(hashedPassword), nil
 }
 
-func CheckPassword(password string, hashedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+func CheckPassword(password string, hashedPassword string) *domainerr.DomainError {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return domainerr.MatchHashError(err)
+	}
+
+	return nil
 }

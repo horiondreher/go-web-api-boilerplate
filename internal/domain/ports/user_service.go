@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/horiondreher/go-web-api-boilerplate/internal/infrastructure/persistence/pgsqlc"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/pgsqlc"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 )
 
 type NewUser struct {
@@ -29,9 +30,9 @@ type NewUserSession struct {
 }
 
 type UserService interface {
-	CreateUser(ctx context.Context, newUser NewUser) (pgsqlc.CreateUserRow, error)
-	LoginUser(ctx context.Context, loginUser LoginUser) (pgsqlc.User, error)
-	CreateUserSession(ctx context.Context, newUserSession NewUserSession) (pgsqlc.Session, error)
-	GetUserSession(ctx context.Context, refreshTokenID uuid.UUID) (pgsqlc.Session, error)
-	GetUserByUID(ctx context.Context, userUID string) (pgsqlc.User, error)
+	CreateUser(ctx context.Context, newUser NewUser) (pgsqlc.CreateUserRow, *domainerr.DomainError)
+	LoginUser(ctx context.Context, loginUser LoginUser) (pgsqlc.User, *domainerr.DomainError)
+	CreateUserSession(ctx context.Context, newUserSession NewUserSession) (pgsqlc.Session, *domainerr.DomainError)
+	GetUserSession(ctx context.Context, refreshTokenID uuid.UUID) (pgsqlc.Session, *domainerr.DomainError)
+	GetUserByUID(ctx context.Context, userUID string) (pgsqlc.User, *domainerr.DomainError)
 }

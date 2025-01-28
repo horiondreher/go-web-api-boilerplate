@@ -2,9 +2,11 @@ package token
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 )
 
 var (
@@ -21,11 +23,10 @@ type Payload struct {
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
-func NewPayload(email string, role string, duration time.Duration) (*Payload, error) {
+func NewPayload(email string, role string, duration time.Duration) (*Payload, *domainerr.DomainError) {
 	tokenID, err := uuid.NewRandom()
-
 	if err != nil {
-		return nil, err
+		return nil, domainerr.NewDomainError(http.StatusInternalServerError, domainerr.UnexpectedError, err.Error(), err)
 	}
 
 	payload := &Payload{
@@ -39,9 +40,9 @@ func NewPayload(email string, role string, duration time.Duration) (*Payload, er
 	return payload, nil
 }
 
-func (payload *Payload) Valid() error {
+func (payload *Payload) Valid() *domainerr.DomainError {
 	if time.Now().After(payload.ExpiredAt) {
-		return ErrExpiredToken
+		return domainerr.NewDomainError(http.StatusUnauthorized, domainerr.ExpiredToken, "Expired Token", ErrExpiredToken)
 	}
 
 	return nil

@@ -102,9 +102,7 @@ func TestCreateUserV1(t *testing.T) {
 
 			require.NoError(t, err)
 
-			handlerFn := server.handlerWrapper(server.createUser)
-			handlerFn(recorder, req)
-
+			server.router.ServeHTTP(recorder, req)
 			tc.checkResponse(recorder)
 		})
 	}
@@ -135,7 +133,7 @@ func TestLoginUser(t *testing.T) {
 		Password: user.password,
 	})
 
-	require.NoError(t, err)
+	require.Nil(t, err)
 
 	tt := []struct {
 		name          string
@@ -202,9 +200,7 @@ func TestLoginUser(t *testing.T) {
 
 			require.NoError(t, err)
 
-			handlerFn := server.handlerWrapper(server.loginUser)
-			handlerFn(recorder, req)
-
+			server.router.ServeHTTP(recorder, req)
 			tc.checkResponse(recorder)
 		})
 	}

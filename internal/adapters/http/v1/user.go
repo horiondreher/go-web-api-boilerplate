@@ -1,25 +1,20 @@
 package v1
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httperr"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/httputils"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/middleware"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
+	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/ports"
 )
-
-type SessionError struct {
-	msg string
-}
-
-func (e *SessionError) Error() string {
-	return e.msg
-}
 
 type CreateUserRequestDto struct {
 	FullName string `json:"full_name" validate:"required"`
@@ -33,15 +28,15 @@ type CreateUserResponseDto struct {
 	Email    string    `json:"email"`
 }
 
-func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) error {
+func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) *domainerr.DomainError {
 	reqUser, err := httputils.Decode[CreateUserRequestDto](r)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
-	err = validate.Struct(reqUser)
-	if err != nil {
-		return errorResponse(err)
+	validationErr := validate.Struct(reqUser)
+	if validationErr != nil {
+		return httperr.MatchValidationError(validationErr)
 	}
 
 	createdUser, err := adapter.userService.CreateUser(r.Context(), ports.NewUser{
@@ -49,16 +44,18 @@ func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) e
 		Email:    reqUser.Email,
 		Password: reqUser.Password,
 	})
-
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
-	httputils.Encode(w, r, http.StatusCreated, CreateUserResponseDto{
+	err = httputils.Encode(w, r, http.StatusCreated, CreateUserResponseDto{
 		UID:      createdUser.UID,
 		FullName: createdUser.FullName,
 		Email:    createdUser.Email,
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -76,15 +73,15 @@ type LoginUserResponseDto struct {
 	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
 }
 
-func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) error {
+func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) *domainerr.DomainError {
 	reqUser, err := httputils.Decode[LoginUserRequestDto](r)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
-	err = validate.Struct(reqUser)
-	if err != nil {
-		return errorResponse(err)
+	validationErr := validate.Struct(reqUser)
+	if validationErr != nil {
+		return httperr.MatchValidationError(validationErr)
 	}
 
 	user, err := adapter.userService.LoginUser(r.Context(), ports.LoginUser{
@@ -92,17 +89,17 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) er
 		Password: reqUser.Password,
 	})
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
 	accessToken, accessPayload, err := adapter.tokenMaker.CreateToken(user.Email, "user", adapter.config.AccessTokenDuration)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
 	refreshToken, refreshPayload, err := adapter.tokenMaker.CreateToken(user.Email, "user", adapter.config.RefreshTokenDuration)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
 	loginRes := LoginUserResponseDto{
@@ -121,12 +118,14 @@ func (adapter *HTTPAdapter) loginUser(w http.ResponseWriter, r *http.Request) er
 		UserAgent:             r.UserAgent(),
 		ClientIP:              r.RemoteAddr,
 	})
-
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
-	httputils.Encode(w, r, http.StatusOK, loginRes)
+	err = httputils.Encode(w, r, http.StatusOK, loginRes)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -140,47 +139,46 @@ type RenewAccessTokenResponseDto struct {
 	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
 }
 
-func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Request) error {
+func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Request) *domainerr.DomainError {
 	renewAccessDto, err := httputils.Decode[RenewAccessTokenRequestDto](r)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
-	err = validate.Struct(renewAccessDto)
-	if err != nil {
-		return errorResponse(err)
+	validationErr := validate.Struct(renewAccessDto)
+	if validationErr != nil {
+		return httperr.MatchValidationError(validationErr)
 	}
 
 	refreshPayload, err := adapter.tokenMaker.VerifyToken(renewAccessDto.RefreshToken)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
 	session, err := adapter.userService.GetUserSession(r.Context(), refreshPayload.ID)
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
 	if session.IsBlocked {
-		return errorResponse(&SessionError{msg: "Session is blocked"})
+		return domainerr.NewDomainError(http.StatusUnauthorized, domainerr.UnauthorizedError, "session is blocked", errors.New("session is blocked"))
 	}
 
 	if session.UserEmail != refreshPayload.Email {
-		return errorResponse(&SessionError{msg: "Invalid session user"})
+		return domainerr.NewDomainError(http.StatusUnauthorized, domainerr.UnauthorizedError, "invalid session user", errors.New("invalid session user"))
 	}
 
 	if session.RefreshToken != renewAccessDto.RefreshToken {
-		return errorResponse(&SessionError{msg: "Invalid refresh token"})
+		return domainerr.NewDomainError(http.StatusUnauthorized, domainerr.UnauthorizedError, "invalid refresh token", errors.New("invalid refresh token"))
 	}
 
 	if time.Now().After(session.ExpiresAt) {
-		return errorResponse(&SessionError{msg: "Session expired"})
+		return domainerr.NewDomainError(http.StatusUnauthorized, domainerr.UnauthorizedError, "session expired", errors.New("session expired"))
 	}
 
 	accessToken, accessPayload, err := adapter.tokenMaker.CreateToken(session.UserEmail, "user", adapter.config.AccessTokenDuration)
-
 	if err != nil {
-		return errorResponse(err)
+		return err
 	}
 
 	renewAccessTokenResponse := RenewAccessTokenResponseDto{
@@ -188,13 +186,15 @@ func (adapter *HTTPAdapter) renewAccessToken(w http.ResponseWriter, r *http.Requ
 		AccessTokenExpiresAt: accessPayload.ExpiredAt,
 	}
 
-	httputils.Encode(w, r, http.StatusOK, renewAccessTokenResponse)
+	err = httputils.Encode(w, r, http.StatusOK, renewAccessTokenResponse)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (adapter *HTTPAdapter) getUserByUID(w http.ResponseWriter, r *http.Request) error {
-
+func (adapter *HTTPAdapter) getUserByUID(w http.ResponseWriter, r *http.Request) *domainerr.DomainError {
 	payload := r.Context().Value(middleware.KeyAuthUser).(*token.Payload)
 	requestID := middleware.GetRequestID(r.Context())
 
@@ -203,19 +203,19 @@ func (adapter *HTTPAdapter) getUserByUID(w http.ResponseWriter, r *http.Request)
 
 	userID := chi.URLParam(r, "uid")
 
-	fmt.Println(userID)
-
-	user, err := adapter.userService.GetUserByUID(r.Context(), userID)
-
-	if err != nil {
-		return errorResponse(err)
+	user, serviceErr := adapter.userService.GetUserByUID(r.Context(), userID)
+	if serviceErr != nil {
+		return serviceErr
 	}
 
-	httputils.Encode(w, r, http.StatusOK, CreateUserResponseDto{
+	err := httputils.Encode(w, r, http.StatusOK, CreateUserResponseDto{
 		UID:      user.UID,
 		Email:    user.Email,
 		FullName: user.FullName,
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
