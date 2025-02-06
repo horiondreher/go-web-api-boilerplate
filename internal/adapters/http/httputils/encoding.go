@@ -10,8 +10,8 @@ import (
 )
 
 func Encode[T any](w http.ResponseWriter, _ *http.Request, status int, v T) *domainerr.DomainError {
-	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
 
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		log.Err(err).Msg("error encoding json")

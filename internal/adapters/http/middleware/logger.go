@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/rs/zerolog/log"
 )
@@ -14,7 +13,6 @@ type responseWriter struct {
 
 func (rw *responseWriter) WriteHeader(statusCode int) {
 	rw.statusCode = statusCode
-	rw.ResponseWriter.WriteHeader(statusCode)
 }
 
 func NewResponseWriter(w http.ResponseWriter) *responseWriter {
@@ -30,9 +28,7 @@ func Logger(next http.Handler) http.Handler {
 		customWriter := NewResponseWriter(w)
 		next.ServeHTTP(customWriter, r)
 
-		statusCode := strconv.Itoa(customWriter.statusCode)
-
-		log.Info().Str("id", requestID).Str("method", r.Method).Str("path", r.URL.Path).Str("response", statusCode).Msg("request response")
+		log.Info().Str("id", requestID).Str("method", r.Method).Str("path", r.URL.Path).Int("response", customWriter.statusCode).Msg("request response")
 	}
 
 	return http.HandlerFunc(fn)

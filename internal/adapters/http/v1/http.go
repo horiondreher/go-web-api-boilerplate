@@ -116,7 +116,7 @@ func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		if apiErr := handlerFn(w, r); apiErr != nil {
 			var httpErrIntf *domainerr.DomainError
-			var err error
+			var err *domainerr.DomainError
 
 			requestID := middleware.GetRequestID(r.Context())
 
@@ -130,7 +130,6 @@ func (adapter *HTTPAdapter) handlerWrapper(handlerFn HandlerWrapper) http.Handle
 
 			if err != nil {
 				log.Err(err).Msg("error encoding response")
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			}
 		}
 	}
