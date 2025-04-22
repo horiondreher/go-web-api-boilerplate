@@ -13,6 +13,7 @@ type responseWriter struct {
 
 func (rw *responseWriter) WriteHeader(statusCode int) {
 	rw.statusCode = statusCode
+	rw.ResponseWriter.WriteHeader(statusCode)
 }
 
 func NewResponseWriter(w http.ResponseWriter) *responseWriter {

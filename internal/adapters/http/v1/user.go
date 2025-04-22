@@ -14,6 +14,7 @@ import (
 	"github.com/horiondreher/go-web-api-boilerplate/internal/adapters/http/token"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/domainerr"
 	"github.com/horiondreher/go-web-api-boilerplate/internal/domain/ports"
+	"github.com/rs/zerolog/log"
 )
 
 type CreateUserRequestDto struct {
@@ -47,6 +48,8 @@ func (adapter *HTTPAdapter) createUser(w http.ResponseWriter, r *http.Request) *
 	if err != nil {
 		return err
 	}
+
+	log.Info().Msg("AAAAAAAAAAAA")
 
 	err = httputils.Encode(w, r, http.StatusCreated, CreateUserResponseDto{
 		UID:      createdUser.UID,
